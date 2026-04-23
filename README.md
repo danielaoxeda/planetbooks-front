@@ -1,6 +1,6 @@
 # 🌍📖 Planet Books — Frontend
 
-> Virtual library platform for exploring, discovering, and managing books online.  
+> Virtual library platform for exploring, discovering, and managing books online.
 
 ![Next.js](https://img.shields.io/badge/Next.js-14-000000?logo=nextdotjs)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?logo=typescript)
