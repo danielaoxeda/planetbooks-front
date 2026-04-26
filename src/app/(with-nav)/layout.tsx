@@ -1,7 +1,9 @@
-import type {Metadata} from "next";
-import {Geist, Geist_Mono} from "next/font/google";
+import type { Metadata } from "next";
+import { Geist, Geist_Mono } from "next/font/google";
 import "../globals.css";
 import Navbar from "@/components/navbar/Navbar";
+import Footer from "@/components/footer/Footer";
+import { AuthProvider } from "@/context/AuthContext"; // <--- Tu aporte
 
 const geistSans = Geist({
     variable: "--font-geist-sans",
@@ -19,8 +21,8 @@ export const metadata: Metadata = {
 };
 
 export default function RootLayout({
-                                       children,
-                                   }: Readonly<{
+    children,
+}: Readonly<{
     children: React.ReactNode;
 }>) {
     return (
@@ -28,11 +30,16 @@ export default function RootLayout({
             lang="en"
             className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
         >
-
-        <body className="min-h-full flex flex-col">
-        <Navbar/>
-        {children}
-        </body>
+            <body className="min-h-full flex flex-col">
+                {/* AuthProvider permite que Navbar y Children compartan datos de sesión.*/}
+                <AuthProvider>
+                    <Navbar />
+                    <main className="flex-1 flex flex-col">
+                        {children}
+                    </main>
+                    <Footer />
+                </AuthProvider>
+            </body>
         </html>
     );
 }
