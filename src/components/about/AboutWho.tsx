@@ -1,4 +1,4 @@
-import {BadgeCheck, Globe, GraduationCap} from "lucide-react";
+import {BadgeCheck, ChartLine, Globe} from "lucide-react";
 
 export default function AboutWho() {
     return (
@@ -16,11 +16,11 @@ export default function AboutWho() {
                     <div className="bg-white p-6 border rounded-lg text-center hover:border-green-600 transition">
                         <div
                             className="w-16 h-16 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
-                            <GraduationCap size={28} className="text-green-600"/>
+                            <ChartLine size={28} className="text-green-600"/>
                         </div>
-                        <h3 className="font-semibold text-lg mb-2">Academic Roots</h3>
+                        <h3 className="font-semibold text-lg mb-2">Constant Growth</h3>
                         <p className="text-gray-600 text-sm">
-                            Founded by educators and linguists focused on structured learning.
+                            We continuously expand our catalog with the latest editions.
                         </p>
                     </div>
 
@@ -30,9 +30,10 @@ export default function AboutWho() {
                             className="w-16 h-16 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
                             <Globe size={28} className="text-green-600"/>
                         </div>
-                        <h3 className="font-semibold text-lg mb-2">Global Perspective</h3>
+                        <h3 className="font-semibold text-lg mb-2">Community Focus</h3>
                         <p className="text-gray-600 text-sm">
-                            Our team spans multiple continents supporting diverse learners.
+                            We support students and teachers, creating a community centered on
+                            education and growth.
                         </p>
                     </div>
 
@@ -42,9 +43,10 @@ export default function AboutWho() {
                             className="w-16 h-16 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
                             <BadgeCheck size={28} className="text-green-600"/>
                         </div>
-                        <h3 className="font-semibold text-lg mb-2">Certified Excellence</h3>
+                        <h3 className="font-semibold text-lg mb-2">International Reach</h3>
                         <p className="text-gray-600 text-sm">
-                            Official materials from top academic publishers worldwide.
+                            As English connects the world, we are expanding our reach to serve
+                            students globally.
                         </p>
                     </div>
 

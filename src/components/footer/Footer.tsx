@@ -18,7 +18,7 @@ export default function Footer() {
 
                 <div className="flex justify-center gap-4 flex-wrap">
                     <a
-                        href="https://wa.me/51960648959?text=Buenas%20tardes%20quisiera%20obtener%20mas%20informaci%C3%B3n%20sobre%20un%20libro"
+                        href="https://wa.me/51960648959?text=Hello, Planet Books%20I%20would%20like%20to%20receive%20more%20information%20about%20a%20book%20available."
                         target="_blank"
                         rel="noopener noreferrer"
                     >
