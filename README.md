@@ -57,10 +57,10 @@ manage accounts, and (in future stages) allow administrators to control the syst
 
 ```bash
 # Clone the repository
-git clone https://github.com/your-username/planet-books-frontend.git
+git clone https://github.com/danielaoxeda/planetbooks-front.git
 
 # Enter the project folder
-cd planet-books-frontend
+cd planetbooks-front
 
 # Install dependencies
 npm install
