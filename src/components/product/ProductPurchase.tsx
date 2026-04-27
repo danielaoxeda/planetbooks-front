@@ -1,19 +1,34 @@
 "use client";
 import React, {useState} from "react";
-import type {Product, ProductItem} from "../../data/products";
+import type {Product, ProductItem} from "@/data/products";
 import {ShoppingCart} from "lucide-react";
 
 interface Props {
     product: Product;
-    onSelectItem?: (item: ProductItem) => void;
+    onSelectItems?: (items: ProductItem[]) => void;
 }
 
-const ProductPurchase: React.FC<Props> = ({product, onSelectItem}) => {
-    const defaultItem = product.items?.find((v) => v.default) ?? product.items?.[0];
-    const [item, setItem] = useState<ProductItem | undefined>(defaultItem);
+export default function ProductPurchase({product, onSelectItems}: Props) {
+    const firstItem = product.items?.[0];
+    const [selectedItems, setSelectedItems] = useState<ProductItem[]>(firstItem ? [firstItem] : []);
     const [quantity, setQuantity] = useState<number>(1);
 
-    const price = item ? item.price : product.price;
+    const price = selectedItems.length > 0
+        ? selectedItems.reduce((sum, current) => sum + current.price, 0)
+        : firstItem?.price ?? 0;
+
+    function toggleItem(item: ProductItem) {
+        setSelectedItems((current) => {
+            const exists = current.some((selected) => selected.key === item.key);
+            const nextItems = exists
+                ? current.filter((selected) => selected.key !== item.key)
+                : [...current, item];
+
+            if (onSelectItems) onSelectItems(nextItems);
+
+            return nextItems;
+        });
+    }
 
     return (
         <div className="w-full">
@@ -35,7 +50,7 @@ const ProductPurchase: React.FC<Props> = ({product, onSelectItem}) => {
                         <label
                             key={v.key}
                             className={`relative flex flex-row items-center gap-4 p-3 rounded-lg cursor-pointer transition-all border ${
-                                v.key === item?.key
+                                selectedItems.some((selected) => selected.key === v.key)
                                     ? "border-primary bg-secondary-container/25 shadow-sm"
                                     : "border-outline-variant bg-surface hover:shadow-sm hover:-translate-y-0.5"
                             }`}
@@ -43,17 +58,11 @@ const ProductPurchase: React.FC<Props> = ({product, onSelectItem}) => {
                             <input
                                 className="sr-only"
                                 name="book_item"
-                                type="radio"
+                                type="checkbox"
                                 value={v.key}
-                                checked={v.key === item?.key}
-                                onChange={() => {
-                                    setItem(v);
-                                    if (onSelectItem) onSelectItem(v);
-                                }}
+                                checked={selectedItems.some((selected) => selected.key === v.key)}
+                                onChange={() => toggleItem(v)}
                             />
-
-                            <img src={v.image ?? product.image} alt={v.title}
-                                 className="w-16 h-20 object-cover rounded-sm border border-outline-variant/60 shadow-sm"/>
 
                             <div className="flex-1 min-w-0">
                                 <div className="flex items-center justify-between">
@@ -91,6 +100,5 @@ const ProductPurchase: React.FC<Props> = ({product, onSelectItem}) => {
     );
 };
 
-export default ProductPurchase;
 
 

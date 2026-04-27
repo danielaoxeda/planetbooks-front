@@ -12,11 +12,11 @@ interface Props {
 }
 
 export default function ProductDetailClient({product}: Props) {
-    const defaultImage = product.items && product.items.length > 0 ? product.items.find((i) => i.default)?.image ?? product.items[0].image ?? product.image : product.image;
+    const defaultImage = product.items?.[0]?.image ?? product.image;
     const [selectedImage, setSelectedImage] = useState<string>(defaultImage as string);
 
-    function handleSelectItem(item: ProductItem) {
-        if (item.image) setSelectedImage(item.image);
+    function handleSelectItems(items: ProductItem[]) {
+        setSelectedImage(items.find((item) => item.image)?.image ?? defaultImage);
     }
 
     return (
@@ -32,7 +32,7 @@ export default function ProductDetailClient({product}: Props) {
 
                     <div
                         className="rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-5 sm:px-6 shadow-sm">
-                        <ProductPurchase product={product} onSelectItem={handleSelectItem}/>
+                        <ProductPurchase product={product} onSelectItems={handleSelectItems}/>
                     </div>
 
                     <ProductSpecs product={product}/>
