@@ -107,8 +107,6 @@ const books = [
     },
 ];
 
-{/* Filters */
-}
 export default function CatalogPage() {
     const [selectedTags, setSelectedTags] = useState<string[]>([]);
     const [selectedLevel, setSelectedLevel] = useState<string>("");
