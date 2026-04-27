@@ -1,5 +1,6 @@
 import React from "react";
 import Link from "next/link";
+import Image from "next/image";
 import products from "@/data/products";
 import {ArrowRight} from "lucide-react";
 
@@ -30,16 +31,21 @@ export default function RelatedBooks({currentId}: Props) {
                         aria-label={`Ver ${it.title}`}
                     >
                         <div className="relative">
-                            <img alt={it.title} className="w-full aspect-3/4 object-cover" src={it.image}/>
+                            <div className="relative w-full aspect-3/4">
+                                <Image alt={it.title} className="object-cover" fill src={it.image}/>
+                            </div>
                             <div
                                 className="absolute top-2 left-2 bg-surface-container-lowest/90 border border-outline-variant text-[11px] px-2 py-1 rounded-md">{it.tag}</div>
                         </div>
 
                         <div className="p-4">
                             <h3 className="font-body-md font-semibold mb-2 leading-tight text-on-background group-hover:text-primary transition-colors">{it.title}</h3>
+                            <div className="text-sm text-on-surface-variant mb-2">
+                                {it.items?.[0]?.title ?? "Item disponible"}
+                            </div>
                             <div className="flex items-center justify-between">
                                 <div className="text-sm text-on-surface-variant">{it.level}</div>
-                                <div className="text-on-background font-bold">${it.price.toFixed(2)}</div>
+                                <div className="text-on-background font-bold">${(it.items?.[0]?.price ?? 0).toFixed(2)}</div>
                             </div>
                         </div>
                     </Link>
