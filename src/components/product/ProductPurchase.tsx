@@ -45,7 +45,7 @@ export default function ProductPurchase({product, onSelectItems}: Props) {
                     className="font-label-caps text-on-surface-variant mb-sm uppercase tracking-widest text-[10px]">Choose
                     your book
                 </div>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-sm gap-4">
+                <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-3 gap-3">
                     {product.items?.map((v) => (
                         <label
                             key={v.key}
@@ -77,22 +77,22 @@ export default function ProductPurchase({product, onSelectItems}: Props) {
                 </div>
             </div>
 
-            <div className="flex flex-col sm:flex-row items-center gap-3 mt-4">
-                <div className="flex items-center gap-2 w-full sm:w-auto">
-                    <label className="text-sm text-on-surface-variant">Qty</label>
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 mt-4">
+                <div className="flex items-center gap-3 w-full sm:w-auto">
+                    <label className="text-sm font-medium text-on-surface-variant shrink-0">Qty</label>
                     <input
                         type="number"
                         min={1}
                         value={quantity}
                         onChange={(e) => setQuantity(Math.max(1, Number(e.target.value || 1)))}
-                        className="w-full sm:w-20 text-center rounded-md border border-outline-variant px-2 py-2 bg-surface-container-lowest"
+                        className="flex-1 sm:w-20 text-center rounded-md border border-outline-variant px-2 py-2.5 bg-surface-container-lowest focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
                     />
                 </div>
 
                 <button
-                    className="w-full sm:flex-1 bg-primary text-on-primary px-6 py-3 font-manrope font-bold rounded-lg hover:brightness-95 transition-all flex items-center justify-center gap-2 cursor-pointer">
-                    <ShoppingCart size={16}/>
-                    Add to cart
+                    className="w-full sm:flex-1 bg-primary text-on-primary px-6 py-3 font-manrope font-bold rounded-lg hover:brightness-95 active:scale-[0.98] transition-all flex items-center justify-center gap-2 cursor-pointer shadow-sm">
+                    <ShoppingCart size={18}/>
+                    <span>Add to cart</span>
                 </button>
 
             </div>

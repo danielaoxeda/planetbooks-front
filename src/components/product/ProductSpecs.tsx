@@ -21,7 +21,7 @@ export default function ProductSpecs({product}: Props) {
                 </div>
             </section>
 
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+            <div className="grid grid-cols-2 xs:grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
                 <div className="bg-surface-container-lowest border border-outline-variant p-4 rounded-lg shadow-sm">
                     <div className="font-label-caps text-on-surface-variant mb-1">Format</div>
                     <div className="font-body-md font-semibold">{product.format ?? "—"}</div>
