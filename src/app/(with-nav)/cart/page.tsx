@@ -19,7 +19,7 @@ export default function CartPage() {
         return (
             <main className="mx-auto flex w-full max-w-7xl flex-1 flex-col px-4 py-10 sm:px-6 lg:px-8">
                 <div className="rounded-2xl border border-outline-variant bg-surface-container-lowest px-6 py-10 text-center text-on-surface-variant shadow-sm">
-                    Cargando carrito...
+                    Loading cart...
                 </div>
             </main>
         );
@@ -32,15 +32,15 @@ export default function CartPage() {
                     <div className="mb-4 inline-flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 text-primary">
                         <ShoppingBag size={28} />
                     </div>
-                    <h1 className="text-2xl font-bold text-on-surface">Tu carrito está vacío</h1>
+                    <h1 className="text-2xl font-bold text-on-surface">Your cart is empty</h1>
                     <p className="mt-2 text-sm text-on-surface-variant">
-                        Agrega productos desde el detalle de cada libro. Por ahora el carrito se guarda solo en este navegador.
+                        Add products from each book detail page. For now, the cart is stored only in this browser.
                     </p>
                     <Link
                         href="/catalog"
                         className="mt-6 rounded-full bg-primary px-5 py-3 text-sm font-semibold text-on-primary transition-colors hover:brightness-95"
                     >
-                        Ir al catálogo
+                        Go to catalog
                     </Link>
                 </div>
             </main>
@@ -51,9 +51,9 @@ export default function CartPage() {
         <main className="mx-auto w-full max-w-7xl flex-1 px-4 py-10 sm:px-6 lg:px-8">
             <div className="mb-6 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
                 <div>
-                    <h1 className="text-3xl font-bold text-on-surface">Carrito temporal</h1>
+                    <h1 className="text-3xl font-bold text-on-surface">Temporary cart</h1>
                     <p className="mt-1 text-sm text-on-surface-variant">
-                        {cartCount} {cartCount === 1 ? "artículo" : "artículos"} guardados localmente en este navegador.
+                        {cartCount} {cartCount === 1 ? "item" : "items"} saved locally in this browser.
                     </p>
                 </div>
 
@@ -63,7 +63,7 @@ export default function CartPage() {
                     className="inline-flex items-center justify-center gap-2 rounded-full border border-error/20 bg-error/5 px-4 py-2 text-sm font-semibold text-error transition-colors hover:bg-error/10"
                 >
                     <Trash2 size={16} />
-                    Vaciar carrito
+                    Clear cart
                 </button>
             </div>
 
@@ -126,7 +126,7 @@ export default function CartPage() {
                                             onClick={() => removeFromCart(item.itemKey)}
                                             className="text-sm font-medium text-error transition-colors hover:underline"
                                         >
-                                            Eliminar
+                                            Remove
                                         </button>
                                     </div>
 
@@ -136,7 +136,7 @@ export default function CartPage() {
                                             {formatPrice(item.itemPrice * item.quantity)}
                                         </p>
                                         <p className="text-xs text-on-surface-variant">
-                                            {formatPrice(item.itemPrice)} c/u
+                                            {formatPrice(item.itemPrice)} each
                                         </p>
                                     </div>
                                 </div>
@@ -146,27 +146,27 @@ export default function CartPage() {
                 </section>
 
                 <aside className="h-fit rounded-2xl border border-outline-variant bg-surface-container-lowest p-5 shadow-sm lg:sticky lg:top-24">
-                    <h2 className="text-lg font-bold text-on-surface">Resumen</h2>
+                    <h2 className="text-lg font-bold text-on-surface">Summary</h2>
                     <div className="mt-4 space-y-3 text-sm text-on-surface-variant">
                         <div className="flex items-center justify-between">
-                            <span>Artículos</span>
+                            <span>Items</span>
                             <span className="font-semibold text-on-surface">{cartCount}</span>
                         </div>
                         <div className="flex items-center justify-between border-t border-outline-variant pt-3">
-                            <span>Total estimado</span>
+                            <span>Estimated total</span>
                             <span className="text-base font-bold text-on-surface">{formatPrice(cartSubtotal)}</span>
                         </div>
                     </div>
 
                     <p className="mt-4 rounded-xl bg-secondary-container/30 px-4 py-3 text-xs text-on-surface-variant">
-                        Este carrito es provisional: se guarda en el navegador hasta que tengamos sesiones y backend.
+                        This cart is temporary: it is saved in the browser until we add sessions and backend support.
                     </p>
 
                     <Link
                         href="/catalog"
                         className="mt-5 inline-flex w-full items-center justify-center rounded-full bg-primary px-5 py-3 text-sm font-semibold text-on-primary transition-colors hover:brightness-95"
                     >
-                        Seguir comprando
+                        Continue shopping
                     </Link>
                 </aside>
             </div>
