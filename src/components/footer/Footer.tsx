@@ -101,7 +101,7 @@ export default function Footer() {
             {/* BOTTOM */}
             <div
                 className="border-t border-white/20 text-sm py-4 px-8 flex flex-col md:flex-row justify-between items-center gap-2">
-                <p>© 2025 PlanetBooks - All Rights Reserved</p>
+                <p>© 2026 PlanetBooks - All Rights Reserved</p>
 
             </div>
 

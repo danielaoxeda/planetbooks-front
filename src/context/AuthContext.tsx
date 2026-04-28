@@ -20,7 +20,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     useEffect(() => {
         const savedUser = localStorage.getItem('pb_session')
-        if (savedUser) setUser(JSON.parse(savedUser))
+        Promise.resolve().then(() => {
+            if (savedUser) setUser(JSON.parse(savedUser))
+        })
     }, [])
 
     const login = (userData: User) => {
