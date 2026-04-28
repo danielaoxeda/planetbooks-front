@@ -32,7 +32,7 @@ export default function RelatedBooks({currentId}: Props) {
                     >
                         <div className="relative">
                             <div className="relative w-full aspect-3/4">
-                                <Image alt={it.title} className="object-cover" fill src={it.image}/>
+                                <Image alt={it.title} className="object-contain" fill src={it.image}/>
                             </div>
                             <div
                                 className="absolute top-2 left-2 bg-surface-container-lowest/90 border border-outline-variant text-[11px] px-2 py-1 rounded-md">{it.tag}</div>
