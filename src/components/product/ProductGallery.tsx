@@ -30,7 +30,7 @@ export default function ProductGallery({cover, images = [], selectedImage, onSel
                 >
                     <img
                         alt="Cover"
-                        className="w-full aspect-3/4 object-cover book-inner-stroke transition-transform duration-300 hover:scale-[1.02]"
+                        className="w-full aspect-3/4 object-contain book-inner-stroke transition-transform duration-300 hover:scale-[1.02]"
                         src={selected}
                     />
                 </button>
