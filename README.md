@@ -4,7 +4,7 @@
 
 ![Next.js](https://img.shields.io/badge/Next.js-14-000000?logo=nextdotjs)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?logo=typescript)
-![Thymeleaf](https://img.shields.io/badge/Thymeleaf-3-005F0F?logo=thymeleaf)
+![TailwindCSS](https://img.shields.io/badge/TailwindCSS-3-38B2AC?logo=tailwindcss)
 ![Lucide](https://img.shields.io/badge/Icons-Lucide-F56565)
 
 
@@ -36,12 +36,12 @@ manage accounts, and (in future stages) allow administrators to control the syst
 ## 🛠️ Tech Stack
 
 | Technology   | Purpose |
-|-------------|--------|
-| Next.js     | React framework for SSR & routing |
-| TypeScript  | Type-safe development |
-| Thymeleaf   | Server-side templating (integration layer) |
-| Lucide Icons| Modern icon library |
-| CSS / UI    | Custom styling and responsive design |
+|--------------|---------|
+| Next.js      | React framework for SSR & routing |
+| TypeScript   | Type-safe development |
+| TailwindCSS  | Utility-first CSS framework for rapid UI design |
+| Lucide Icons | Modern icon library |
+| CSS / UI     | Custom styling and responsive design |
 
 ---
 
