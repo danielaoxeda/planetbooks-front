@@ -36,17 +36,17 @@ export default function ProductGallery({cover, images = [], selectedImage, onSel
                 </button>
             </div>
 
-            <div className="mt-3 sm:mt-4 flex gap-2 overflow-x-auto pb-1">
+            <div className="mt-3 sm:mt-4 flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
                 {all.map((src, i) => {
                     const isActive = src === selected;
                     return (
                         <button
                             key={src + i}
                             onClick={() => handleSelect(src)}
-                            className={`shrink-0 w-16 h-16 sm:w-20 sm:h-20 rounded-md overflow-hidden transition-all duration-200 border ${
+                            className={`shrink-0 w-14 h-14 sm:w-20 sm:h-20 rounded-md overflow-hidden transition-all duration-200 border-2 ${
                                 isActive
-                                    ? "ring-2 ring-primary border-primary shadow-sm"
-                                    : "border-outline-variant opacity-80 hover:opacity-100 hover:-translate-y-0.5"
+                                    ? "ring-2 ring-primary/20 border-primary shadow-sm"
+                                    : "border-transparent opacity-70 hover:opacity-100"
                             }`}
                             aria-pressed={isActive}
                             aria-label={`Preview ${i + 1}`}

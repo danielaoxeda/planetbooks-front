@@ -20,14 +20,14 @@ export default function ProductDetailClient({product}: Props) {
     }
 
     return (
-        <main className="pt-15 pb-xl px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
-            <div className="grid grid-cols-1 md:grid-cols-12 gap-6 lg:gap-10 items-start">
-                <div className="md:col-span-5 lg:col-span-4 sticky top-32">
+        <main className="pt-8 pb-12 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+            <div className="flex flex-col md:grid md:grid-cols-12 gap-8 lg:gap-12 items-start">
+                <div className="w-full md:col-span-5 lg:col-span-4 md:sticky md:top-32">
                     <ProductGallery cover={product.image} images={product.gallery} selectedImage={selectedImage}
                                     onSelect={(s) => setSelectedImage(s)}/>
                 </div>
 
-                <div className="md:col-span-7 lg:col-span-8 flex flex-col gap-6 lg:gap-8">
+                <div className="w-full md:col-span-7 lg:col-span-8 flex flex-col gap-6 lg:gap-8">
                     <ProductDetails product={product}/>
 
                     <div

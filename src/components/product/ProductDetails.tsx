@@ -18,19 +18,21 @@ export default function ProductDetails({product}: Props) {
                 <span className="text-primary font-bold">{product.tag ?? ""}</span>
             </nav>
 
-            <div className="rounded-xl border border-outline-variant bg-surface-container-lowest p-4 sm:p-6 shadow-sm">
-                <div className="flex flex-col gap-4 md:gap-5">
+            <div className="rounded-xl border border-outline-variant bg-surface-container-lowest p-5 sm:p-6 shadow-sm">
+                <div className="flex flex-col gap-5 md:gap-6">
                     <div className="flex items-center gap-3">
                         <div
-                            className="inline-block bg-secondary-container text-on-secondary-container font-label-caps px-3 py-1 rounded-md uppercase">{product.level ?? ""}</div>
+                            className="inline-block bg-secondary-container text-on-secondary-container font-label-caps px-3 py-1 rounded-md uppercase text-[10px] sm:text-xs">{product.level ?? ""}</div>
                     </div>
 
-                    <h1 className="font-h1 text-h1 text-on-background leading-tight">{product.title}</h1>
+                    <h1 className="font-h1 text-2xl sm:text-3xl lg:text-4xl text-on-background leading-tight">{product.title}</h1>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-start">
-                        <p className="font-body-lg text-on-surface-variant leading-relaxed max-w-2xl">{product.description}</p>
+                    <div className="flex flex-col lg:grid lg:grid-cols-12 gap-6 lg:gap-8 items-start">
+                        <div className="lg:col-span-7">
+                            <p className="font-body-lg text-on-surface-variant leading-relaxed">{product.description}</p>
+                        </div>
 
-                        <div className="space-y-3">
+                        <div className="lg:col-span-5 w-full space-y-4">
                             <div className="flex flex-wrap gap-2">
                                 {product.categories?.slice(0, 4).map((c) => (
                                     <span key={c}
