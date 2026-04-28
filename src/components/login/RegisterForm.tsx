@@ -25,7 +25,8 @@ export default function RegisterForm({ onSwitch }: { onSwitch: () => void }) {
         <form onSubmit={handleSubmit} className="flex flex-col gap-4 animate-in fade-in duration-500">
             <div className="space-y-1">
                 <h2 className="text-2xl font-bold text-on-surface">Join us.</h2>
-                <p className="text-on-surface-variant text-sm">Create an account to track your progress.</p>
+                <p className="text-on-surface-variant text-sm">Create an account to manage and track your purchases.
+                </p>
             </div>
 
             <div className="flex flex-col gap-3">

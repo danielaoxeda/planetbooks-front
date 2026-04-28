@@ -16,7 +16,7 @@ export default function AuthCard() {
                 </div>
                 <div className="relative z-10">
                     <h1 className="text-4xl font-bold mb-4">Planet Books</h1>
-                    <p className="text-lg text-white/90">Especialistas en certificaciones de inglés: IELTS, TOEFL y Cambridge.</p>
+                    <p className="text-lg text-white/90">Specialists in English certifications.</p>
                 </div>
                 <div className="relative z-10 space-y-4">
                     <div className="flex items-center gap-3">
