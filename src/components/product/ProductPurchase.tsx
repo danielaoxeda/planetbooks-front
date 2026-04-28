@@ -2,6 +2,7 @@
 import React, {useState} from "react";
 import type {Product, ProductItem} from "@/data/products";
 import {ShoppingCart} from "lucide-react";
+import {useCart} from "@/context/CartContext";
 
 interface Props {
     product: Product;
@@ -12,6 +13,7 @@ export default function ProductPurchase({product, onSelectItems}: Props) {
     const firstItem = product.items?.[0];
     const [selectedItems, setSelectedItems] = useState<ProductItem[]>(firstItem ? [firstItem] : []);
     const [quantity, setQuantity] = useState<number>(1);
+    const {addToCart} = useCart();
 
     const price = selectedItems.length > 0
         ? selectedItems.reduce((sum, current) => sum + current.price, 0)
@@ -28,6 +30,16 @@ export default function ProductPurchase({product, onSelectItems}: Props) {
 
             return nextItems;
         });
+    }
+
+    function handleAddToCart() {
+        const itemsToAdd = selectedItems.length > 0
+            ? selectedItems
+            : firstItem
+                ? [firstItem]
+                : [];
+
+        itemsToAdd.forEach((item) => addToCart(product, item, quantity));
     }
 
     return (
@@ -90,6 +102,8 @@ export default function ProductPurchase({product, onSelectItems}: Props) {
                 </div>
 
                 <button
+                    type="button"
+                    onClick={handleAddToCart}
                     className="w-full sm:flex-1 bg-primary text-on-primary px-6 py-3 font-manrope font-bold rounded-lg hover:brightness-95 active:scale-[0.98] transition-all flex items-center justify-center gap-2 cursor-pointer shadow-sm">
                     <ShoppingCart size={18}/>
                     <span>Add to cart</span>

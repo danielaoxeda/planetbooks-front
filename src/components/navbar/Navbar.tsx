@@ -1,9 +1,12 @@
 'use client'
 
+import Image from "next/image"
 import Link from "next/link"
 import { useState } from "react"
 import { usePathname } from "next/navigation"
 import { useAuth } from "@/context/AuthContext"
+import { ShoppingCart } from "lucide-react"
+import { useCart } from "@/context/CartContext"
 
 interface NavItem {
     name: string
@@ -27,8 +30,7 @@ export default function Navbar() {
     const pathname = usePathname() ?? "/"
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
     const { user, logout } = useAuth()
-
-    const activeItem = navItems.find((item) => isActivePath(pathname, item.href))
+    const { cartCount } = useCart()
 
     return (
         <header key={pathname}
@@ -41,7 +43,7 @@ export default function Navbar() {
                     className="text-lg font-semibold tracking-tight text-on-surface transition-colors flex items-center gap-2"
                     aria-label="Planet Books home"
                 >
-                    <img src="/logo.png" alt="Planet Books logo" className="h-10 w-auto" />
+                    <Image src="/logo.png" alt="Planet Books logo" width={40} height={40} className="h-10 w-auto" />
                     <div>
                         Planet
                         <span className="text-primary">Books</span>
@@ -70,6 +72,20 @@ export default function Navbar() {
 
                 {/* ÁREA DE USUARIO (Desktop) */}
                 <div className="hidden items-center gap-3 md:flex">
+                    <Link
+                        href="/cart"
+                        className="relative inline-flex items-center gap-2 rounded-full border border-outline-variant bg-surface-container-low px-4 py-2 text-sm font-medium text-on-surface-variant transition-colors hover:bg-surface-container-high hover:text-on-surface"
+                        aria-label={`Open cart with ${cartCount} items`}
+                    >
+                        <ShoppingCart size={16} />
+                        <span>Cart</span>
+                        {cartCount > 0 ? (
+                            <span className="ml-1 inline-flex min-w-5 items-center justify-center rounded-full bg-primary px-1.5 py-0.5 text-[11px] font-bold leading-none text-on-primary">
+                                {cartCount}
+                            </span>
+                        ) : null}
+                    </Link>
+
                     {user ? (
                         <div className="flex items-center gap-4 bg-surface-container-low pl-4 pr-1 py-1 rounded-full border border-outline-variant">
                             <div className="flex flex-col items-end">
@@ -145,6 +161,22 @@ export default function Navbar() {
                                 </Link>
                             )
                         })}
+
+                        <Link
+                            href="/cart"
+                            onClick={() => setMobileMenuOpen(false)}
+                            className="flex items-center justify-between rounded-xl border border-outline-variant bg-surface-container px-4 py-3 text-sm font-medium text-on-surface-variant transition-colors hover:bg-surface-container-high"
+                        >
+                            <span className="flex items-center gap-2">
+                                <ShoppingCart size={16} />
+                                Cart
+                            </span>
+                            {cartCount > 0 ? (
+                                <span className="inline-flex min-w-6 items-center justify-center rounded-full bg-primary px-2 py-0.5 text-xs font-bold text-on-primary">
+                                    {cartCount}
+                                </span>
+                            ) : null}
+                        </Link>
 
                         <div className="mt-4 grid grid-cols-2 gap-3">
                             {user ? (

@@ -4,6 +4,7 @@ import "../globals.css";
 import Navbar from "@/components/navbar/Navbar";
 import Footer from "@/components/footer/Footer";
 import { AuthProvider } from "@/context/AuthContext"; // <--- Tu aporte
+import { CartProvider } from "@/context/CartContext";
 
 const geistSans = Geist({
     variable: "--font-geist-sans",
@@ -33,11 +34,13 @@ export default function RootLayout({
             <body className="min-h-full flex flex-col">
                 {/* AuthProvider permite que Navbar y Children compartan datos de sesión.*/}
                 <AuthProvider>
-                    <Navbar />
-                    <main className="flex-1 flex flex-col">
-                        {children}
-                    </main>
-                    <Footer />
+                    <CartProvider>
+                        <Navbar />
+                        <main className="flex-1 flex flex-col">
+                            {children}
+                        </main>
+                        <Footer />
+                    </CartProvider>
                 </AuthProvider>
             </body>
         </html>
