@@ -1,12 +1,13 @@
 "use client";
 
-import { Geist, Geist_Mono } from "next/font/google";
+import {Geist, Geist_Mono} from "next/font/google";
 import "../../globals.css";
-import { AuthProvider } from "@/context/AuthContext";
-import { CartProvider } from "@/context/CartContext";
+import {AuthProvider} from "@/context/AuthContext";
+import {CartProvider} from "@/context/CartContext";
 import Sidebar from "@/components/admin/sidebar/Sidebar";
 import TopBar from "@/components/admin/topbar/Topbar";
-import { useState } from "react";
+import {useState} from "react";
+import {usePathname} from "next/navigation";
 
 const geistSans = Geist({
     variable: "--font-geist-sans",
@@ -19,12 +20,52 @@ const geistMono = Geist_Mono({
 });
 
 export default function RootLayout({
-    children,
-}: Readonly<{
+                                       children,
+                                   }: Readonly<{
     children: React.ReactNode;
 }>) {
     const [sidebarOpen, setSidebarOpen] = useState(false);
+    const pathname = usePathname();
+    const topbarConfig: Record<
+        string,
+        {
+            title: string;
+            subtitle: string;
+        }
+    > = {
+        "/admin/dashboard": {
+            title: "Dashboard",
+            subtitle:
+                "Overview of platform analytics",
+        },
 
+        "/admin/users": {
+            title: "Users",
+            subtitle:
+                "Manage platform users",
+        },
+
+        "/admin/books": {
+            title: "Books",
+            subtitle:
+                "Manage products and inventory",
+        },
+
+        "/admin/settings": {
+            title: "Settings",
+            subtitle:
+                "Configure your platform",
+        },
+    };
+    const currentTopbar =
+        Object.entries(topbarConfig).find(
+            ([route]) =>
+                pathname.startsWith(route)
+        )?.[1] || {
+            title: "Admin Panel",
+            subtitle:
+                "Manage your platform",
+        };
     return (
         <html
             lang="en"
@@ -38,7 +79,13 @@ export default function RootLayout({
                     onClose={() => setSidebarOpen(false)}
                 />
                 <div className="flex-1 flex flex-col w-full min-h-screen md:min-h-auto overflow-x-hidden">
-                    <TopBar onMenuClick={() => setSidebarOpen(!sidebarOpen)} />
+                    <TopBar
+                        title={currentTopbar.title}
+                        subtitle={currentTopbar.subtitle}
+                        onMenuClick={() =>
+                            setSidebarOpen(!sidebarOpen)
+                        }
+                    />
                     <main className="flex-1 overflow-y-auto overflow-x-hidden">
                         {children}
                     </main>
