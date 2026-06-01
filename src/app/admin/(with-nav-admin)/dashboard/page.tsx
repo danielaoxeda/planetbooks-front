@@ -1,3 +1,4 @@
+import ActivityFeed from "@/components/admin/dashboard/ActivityFeed";
 import BooksTable from "@/components/admin/dashboard/BooksTable";
 import SalesChart from "@/components/admin/dashboard/SalesChart";
 import StatsCards from "@/components/admin/dashboard/StatsCards";
@@ -15,6 +16,7 @@ export default function AdminDashboardPage() {
                         <SalesChart/>
                     </div>
 
+                    <ActivityFeed/>
 
                 </div>
 
