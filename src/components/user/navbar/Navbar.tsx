@@ -39,7 +39,7 @@ export default function Navbar() {
 
                 {/* LOGO */}
                 <Link
-                    href="/"
+                    href="/public"
                     className="text-lg font-semibold tracking-tight text-on-surface transition-colors flex items-center gap-2"
                     aria-label="Planet Books home"
                 >

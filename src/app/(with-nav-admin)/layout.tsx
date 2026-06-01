@@ -1,8 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "../globals.css";
-import Navbar from "@/components/user/navbar/Navbar";
-import Footer from "@/components/user/footer/Footer";
 import { AuthProvider } from "@/context/AuthContext"; // <--- Tu aporte
 import { CartProvider } from "@/context/CartContext";
 
@@ -22,8 +20,8 @@ export const metadata: Metadata = {
 };
 
 export default function RootLayout({
-    children,
-}: Readonly<{
+                                       children,
+                                   }: Readonly<{
     children: React.ReactNode;
 }>) {
     return (
@@ -31,18 +29,16 @@ export default function RootLayout({
             lang="en"
             className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
         >
-            <body className="min-h-full flex flex-col">
-                {/* AuthProvider permite que Navbar y Children compartan datos de sesión.*/}
-                <AuthProvider>
-                    <CartProvider>
-                        <Navbar />
-                        <main className="flex-1 flex flex-col">
-                            {children}
-                        </main>
-                        <Footer />
-                    </CartProvider>
-                </AuthProvider>
-            </body>
+        <body className="min-h-full flex flex-col">
+        {/* AuthProvider permite que Navbar y Children compartan datos de sesión.*/}
+        <AuthProvider>
+            <CartProvider>
+                <main className="flex-1 flex flex-col">
+                    {children}
+                </main>
+            </CartProvider>
+        </AuthProvider>
+        </body>
         </html>
     );
 }

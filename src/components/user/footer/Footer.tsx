@@ -54,7 +54,7 @@ export default function Footer() {
                     <h4 className="font-semibold mb-3">Quick Links</h4>
                     <ul className="space-y-2 text-sm opacity-90">
                         <li>
-                            <Link href="/" className="hover:underline">
+                            <Link href="/public" className="hover:underline">
                                 Home
                             </Link>
                         </li>
