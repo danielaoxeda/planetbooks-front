@@ -3,6 +3,8 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "../../globals.css";
 import { AuthProvider } from "@/context/AuthContext"; // <--- Tu aporte
 import { CartProvider } from "@/context/CartContext";
+import Sidebar from "@/components/admin/sidebar/Sidebar";
+import TopBar from "@/components/admin/topbar/Topbar";
 
 const geistSans = Geist({
     variable: "--font-geist-sans",
@@ -33,6 +35,8 @@ export default function RootLayout({
         {/* AuthProvider permite que Navbar y Children compartan datos de sesión.*/}
         <AuthProvider>
             <CartProvider>
+                <TopBar />
+                <Sidebar />
                 <main className="flex-1 flex flex-col">
                     {children}
                 </main>
