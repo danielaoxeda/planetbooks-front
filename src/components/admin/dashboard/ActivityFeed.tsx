@@ -3,8 +3,17 @@ import {BookOpen, Package,} from "lucide-react";
 import {getRecentActivities} from "@/utils/adminStats";
 
 const iconMap = {
-    product: BookOpen,
-    inventory: Package,
+    product: {
+        icon: BookOpen,
+        bg: "bg-blue-100",
+        color: "text-blue-700",
+    },
+
+    inventory: {
+        icon: Package,
+        bg: "bg-orange-100",
+        color: "text-orange-700",
+    },
 };
 
 export default function ActivityFeed() {
@@ -33,10 +42,13 @@ export default function ActivityFeed() {
 
                 {activities.map((activity) => {
 
-                    const Icon =
+                    const activityConfig =
                         iconMap[
                             activity.type as keyof typeof iconMap
                             ];
+
+                    const Icon =
+                        activityConfig.icon;
 
                     return (
                         <div
@@ -45,7 +57,8 @@ export default function ActivityFeed() {
                         >
 
                             <div
-                                className="w-11 h-11 rounded-xl bg-green-100 text-green-700 flex items-center justify-center flex-shrink-0">
+                                className={`w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 ${activityConfig.bg} ${activityConfig.color}`}
+                            >
                                 <Icon size={20}/>
                             </div>
 
