@@ -29,3 +29,23 @@ export function getDashboardStats() {
         totalCategories: categories.size,
     };
 }
+
+export function getRecentActivities() {
+    return products.slice(0, 5).map((product, index) => ({
+        id: product.id,
+
+        title:
+            index % 2 === 0
+                ? "New Product Added"
+                : "Inventory Updated",
+
+        description: product.title,
+
+        time: `${index + 1} hour ago`,
+
+        type:
+            index % 2 === 0
+                ? "product"
+                : "inventory",
+    }));
+}
