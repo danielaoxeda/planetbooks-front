@@ -133,69 +133,71 @@ export default function UserPage() {
         );
 
     return (
-        <>
-            <UserFilters
-                search={search}
-                onSearchChange={
-                    setSearch
-                }
-                onCreateUser={
-                    openCreateModal
-                }
-            />
+        <div className="w-full max-w-full p-3 sm:p-4 md:p-6 lg:p-8">
+            <div className="w-full max-w-full space-y-4 sm:space-y-6">
+                <UserFilters
+                    search={search}
+                    onSearchChange={
+                        setSearch
+                    }
+                    onCreateUser={
+                        openCreateModal
+                    }
+                />
 
-            <UserStats
-                totalUsers={
-                    users.length
-                }
-                activeUsers={
-                    users.filter(
-                        (u) =>
-                            u.enabled
-                    ).length
-                }
-                inactiveUsers={
-                    users.filter(
-                        (u) =>
-                            !u.enabled
-                    ).length
-                }
-                admins={
-                    users.filter(
-                        (u) =>
-                            u.role ===
-                            "ADMIN"
-                    ).length
-                }
-            />
+                <UserStats
+                    totalUsers={
+                        users.length
+                    }
+                    activeUsers={
+                        users.filter(
+                            (u) =>
+                                u.enabled
+                        ).length
+                    }
+                    inactiveUsers={
+                        users.filter(
+                            (u) =>
+                                !u.enabled
+                        ).length
+                    }
+                    admins={
+                        users.filter(
+                            (u) =>
+                                u.role ===
+                                "ADMIN"
+                        ).length
+                    }
+                />
 
-            <UserTable
-                users={filteredUsers}
-                onEdit={
-                    openEditModal
-                }
-                onDelete={(user) => {
-                    setSelectedUser(
-                        user
-                    );
+                <UserTable
+                    users={filteredUsers}
+                    onEdit={
+                        openEditModal
+                    }
+                    onDelete={(user) => {
+                        setSelectedUser(
+                            user
+                        );
 
-                    setDeleteOpen(
-                        true
-                    );
-                }}
-            />
+                        setDeleteOpen(
+                            true
+                        );
+                    }}
+                />
 
-            <UserPagination
-                currentPage={
-                    currentPage
-                }
-                totalPages={3}
-                onPageChange={
-                    setCurrentPage
-                }
-            />
+                <UserPagination
+                    currentPage={
+                        currentPage
+                    }
+                    totalPages={3}
+                    onPageChange={
+                        setCurrentPage
+                    }
+                />
 
-            <FooterCards />
+                <FooterCards />
+            </div>
 
             <UserFormModal
                 open={formOpen}
@@ -222,6 +224,6 @@ export default function UserPage() {
                     handleDelete
                 }
             />
-        </>
+        </div>
     );
 }
