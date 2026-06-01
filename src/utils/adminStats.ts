@@ -49,3 +49,36 @@ export function getRecentActivities() {
                 : "inventory",
     }));
 }
+
+export function getSalesData() {
+    return [
+        {
+            date: "Oct 01",
+            sales: 1200,
+        },
+        {
+            date: "Oct 05",
+            sales: 2100,
+        },
+        {
+            date: "Oct 10",
+            sales: 1800,
+        },
+        {
+            date: "Oct 15",
+            sales: 2600,
+        },
+        {
+            date: "Oct 20",
+            sales: 3200,
+        },
+        {
+            date: "Oct 25",
+            sales: 2800,
+        },
+        {
+            date: "Oct 30",
+            sales: 4100,
+        },
+    ];
+}
