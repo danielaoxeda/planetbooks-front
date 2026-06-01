@@ -1,49 +1,172 @@
+"use client";
+
+import {Download, FileBarChart,} from "lucide-react";
+
+import {Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis,} from "recharts";
+
+import {getSalesData} from "@/utils/adminStats";
+
 export default function SalesChart() {
-    const bars = [45, 65, 85, 55, 70, 40, 95];
+
+    const data =
+        getSalesData();
+
+    const handleExportCSV = () => {
+
+        const headers =
+            ["Date", "Sales"];
+
+        const rows =
+            data.map((item) => [
+                item.date,
+                item.sales,
+            ]);
+
+        const csvContent =
+            [
+                headers.join(","),
+                ...rows.map((row) =>
+                    row.join(",")
+                ),
+            ].join("\n");
+
+        const blob =
+            new Blob(
+                [csvContent],
+                {
+                    type: "text/csv;charset=utf-8;",
+                }
+            );
+
+        const url =
+            URL.createObjectURL(blob);
+
+        const link =
+            document.createElement("a");
+
+        link.href = url;
+
+        link.setAttribute(
+            "download",
+            "sales-report.csv"
+        );
+
+        document.body.appendChild(link);
+
+        link.click();
+
+        document.body.removeChild(link);
+    };
 
     return (
-        <div
-            className="lg:col-span-2 bg-white rounded-2xl border border-gray-200 p-8 shadow-sm h-[400px] flex flex-col">
+        <div className="bg-white rounded-2xl border border-gray-200 p-8 shadow-sm h-[400px] flex flex-col">
+
             <div className="flex justify-between items-center mb-8">
+
                 <div>
-                    <h3 className="text-xl font-bold">
+                    <h3 className="text-xl font-bold text-gray-900">
                         Sales Performance
                     </h3>
 
-                    <p className="text-sm text-gray-500">
+                    <p className="text-sm text-gray-500 mt-1">
                         Last 30 days analytics
                     </p>
                 </div>
 
                 <div className="flex gap-3">
-                    <button className="px-4 py-2 rounded-xl border border-gray-200 text-sm">
+
+                    <button
+                        onClick={
+                            handleExportCSV
+                        }
+                        className="px-4 py-2 rounded-xl border border-gray-200 text-sm flex items-center gap-2 hover:bg-gray-50 transition-colors"
+                    >
+                        <Download size={16}/>
+
                         Export CSV
                     </button>
 
-                    <button className="px-4 py-2 rounded-xl bg-green-700 text-white text-sm">
+                    <button
+                        className="px-4 py-2 rounded-xl bg-green-700 hover:bg-green-800 transition-colors text-white text-sm flex items-center gap-2">
+
+                        <FileBarChart size={16}/>
+
                         View Report
                     </button>
+
                 </div>
+
             </div>
 
-            <div className="flex-1 flex items-end gap-3">
-                {bars.map((height, index) => (
-                    <div
-                        key={index}
-                        className="flex-1 bg-green-600 rounded-t-xl hover:opacity-80 transition-all"
-                        style={{
-                            height: `${height}%`,
-                        }}
-                    />
-                ))}
+            <div className="flex-1">
+
+                <ResponsiveContainer
+                    width="100%"
+                    height="100%"
+                >
+
+                    <AreaChart data={data}>
+
+                        <defs>
+
+                            <linearGradient
+                                id="sales"
+                                x1="0"
+                                y1="0"
+                                x2="0"
+                                y2="1"
+                            >
+
+                                <stop
+                                    offset="0%"
+                                    stopColor="#16a34a"
+                                    stopOpacity={0.35}
+                                />
+
+                                <stop
+                                    offset="100%"
+                                    stopColor="#16a34a"
+                                    stopOpacity={0}
+                                />
+
+                            </linearGradient>
+
+                        </defs>
+
+                        <CartesianGrid
+                            strokeDasharray="3 3"
+                            vertical={false}
+                        />
+
+                        <XAxis
+                            dataKey="date"
+                            tickLine={false}
+                            axisLine={false}
+                            fontSize={12}
+                        />
+
+                        <YAxis
+                            tickLine={false}
+                            axisLine={false}
+                            fontSize={12}
+                        />
+
+                        <Tooltip/>
+
+                        <Area
+                            type="monotone"
+                            dataKey="sales"
+                            stroke="#16a34a"
+                            strokeWidth={3}
+                            fill="url(#sales)"
+                        />
+
+                    </AreaChart>
+
+                </ResponsiveContainer>
+
             </div>
 
-            <div className="flex justify-between mt-4 text-xs text-gray-400 font-medium">
-                <span>OCT 01</span>
-                <span>OCT 10</span>
-                <span>OCT 20</span>
-                <span>OCT 30</span>
-            </div>
         </div>
     );
 }
