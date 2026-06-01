@@ -1,6 +1,6 @@
-import AboutHero from "@/components/about/AboutHero";
-import AboutWho from "@/components/about/AboutWho";
-import AboutWhy from "@/components/about/AboutWhy";
+import AboutHero from "@/components/user/about/AboutHero";
+import AboutWho from "@/components/user/about/AboutWho";
+import AboutWhy from "@/components/user/about/AboutWhy";
 
 export default function AboutPage() {
     return (

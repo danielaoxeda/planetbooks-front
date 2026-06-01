@@ -1,5 +1,5 @@
 import React from "react";
-import ProductDetailClient from "@/components/product/ProductDetailClient";
+import ProductDetailClient from "@/components/user/product/ProductDetailClient";
 import products from "@/data/products";
 
 interface Props {
