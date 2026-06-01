@@ -1,30 +1,4 @@
-export interface ProductItem {
-    key: string; // unique within the product group
-    title: string; // actual book title/version title
-    price: number;
-    image?: string;
-    description?: string;
-    pages?: string;
-    format?: string;
-    default?: boolean;
-}
-
-export interface Product {
-    id: number;
-    title: string;
-    description: string;
-    tag?: string;
-    categories?: string[];
-    level?: string;
-    image: string; // cover
-    gallery?: string[];
-    pages?: string;
-    format?: string;
-    publisher?: string;
-    language?: string;
-    // when a product is a group, `items` lists the individual books you can choose to buy
-    items?: ProductItem[];
-}
+import {Product} from "@/types/product";
 
 export const products: Product[] = [
     {
