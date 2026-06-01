@@ -4,8 +4,8 @@ import DatabaseManagement from "@/components/admin/settings/DatabaseManagement";
 
 export default function SettingsPage() {
     return (
-        <div className="space-y-8">
-            <SettingsHero />
+        <div className="w-full max-w-full p-3 sm:p-4 md:p-6 lg:p-8">
+        <SettingsHero />
 
             <GeneralSettings />
 
