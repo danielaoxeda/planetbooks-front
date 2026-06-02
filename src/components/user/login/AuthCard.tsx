@@ -35,7 +35,7 @@ export default function AuthCard() {
                             key={tab}
                             onClick={() => setActiveTab(tab)}
                             className={`pb-4 text-xl font-bold capitalize transition-all ${activeTab === tab ? 'border-b-4 border-primary text-on-surface' : 'text-on-surface-variant hover:text-on-surface'
-                                }`}
+                            }`}
                         >
                             {tab}
                         </button>
