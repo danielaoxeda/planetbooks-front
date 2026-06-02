@@ -9,6 +9,7 @@ import AddBookModal from "@/components/admin/books/AddBookModal";
 import BooksFilters from "@/components/admin/books/BooksFilters";
 import BooksPagination from "@/components/admin/books/BooksPagination";
 import BooksTable from "@/components/admin/books/BooksTable";
+import EditBookModal from "@/components/admin/books/EditBookModal";
 
 import {Product} from "@/types/product";
 
@@ -28,6 +29,12 @@ export default function BooksPage() {
 
     const [category, setCategory] =
         useState("All Categories");
+
+    const [editModalOpen, setEditModalOpen] =
+        useState(false);
+
+    const [selectedBook, setSelectedBook] =
+        useState<Product | null>(null);
 
     const filteredBooks =
         books.filter((book) => {
@@ -75,6 +82,28 @@ export default function BooksPage() {
         ]);
     };
 
+    const handleEdit = (
+        book: Product
+    ) => {
+
+        setSelectedBook(book);
+
+        setEditModalOpen(true);
+    };
+
+    const handleUpdateBook = (
+        updatedBook: Product
+    ) => {
+
+        setBooks((prev) =>
+            prev.map((book) =>
+                book.id === updatedBook.id
+                    ? updatedBook
+                    : book
+            )
+        );
+    };
+
     return (
         <div className="p-4 sm:p-6 lg:p-8 space-y-6">
 
@@ -109,15 +138,8 @@ export default function BooksPage() {
 
             <BooksTable
                 books={filteredBooks}
-                onEdit={(book) =>
-                    console.log(
-                        "Edit:",
-                        book
-                    )
-                }
-                onDelete={
-                    handleDelete
-                }
+                onEdit={handleEdit}
+                onDelete={handleDelete}
             />
 
             <BooksPagination
@@ -128,6 +150,15 @@ export default function BooksPage() {
                 onPageChange={
                     setCurrentPage
                 }
+            />
+
+            <EditBookModal
+                open={editModalOpen}
+                onClose={() =>
+                    setEditModalOpen(false)
+                }
+                book={selectedBook}
+                onSave={handleUpdateBook}
             />
 
         </div>
