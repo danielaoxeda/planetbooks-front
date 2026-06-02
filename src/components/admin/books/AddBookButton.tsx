@@ -10,7 +10,11 @@ import BooksFilters from "@/components/admin/books/BooksFilters";
 import BooksTable from "@/components/admin/books/BooksTable";
 import BooksPagination from "@/components/admin/books/BooksPagination";
 
-export default function BooksPage() {
+interface AddBookButtonProps {
+    onClick?: () => void
+}
+
+export default function BooksPage({onClick}: AddBookButtonProps) {
 
     const [books, setBooks] =
         useState(products);
@@ -141,16 +145,6 @@ export default function BooksPage() {
         <div className="p-4 sm:p-6 lg:p-8 space-y-6">
 
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-
-                <div>
-                    <h1 className="text-2xl font-bold text-gray-900">
-                        Books
-                    </h1>
-
-                    <p className="text-sm text-gray-500 mt-1">
-                        Manage your catalog
-                    </p>
-                </div>
 
                 <button
                     onClick={() =>
