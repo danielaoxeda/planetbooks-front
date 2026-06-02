@@ -8,7 +8,12 @@ export default function RegisterForm({ onSwitch }: { onSwitch: () => void }) {
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault()
         setLoading(true)
-        const data = Object.fromEntries(new FormData(e.currentTarget))
+        const formData = new FormData(e.currentTarget)
+        const data = {
+            name: String(formData.get('name') ?? ''),
+            email: String(formData.get('email') ?? ''),
+            password: String(formData.get('password') ?? ''),
+        }
 
         try {
             await authService.register(data)
@@ -34,19 +39,19 @@ export default function RegisterForm({ onSwitch }: { onSwitch: () => void }) {
                 <div className="flex flex-col gap-1">
                     <label className="text-[10px] font-bold uppercase text-primary">Full Name</label>
                     <input name="name" type="text" required placeholder="John Doe"
-                        className="w-full bg-transparent border-b border-outline-variant focus:border-primary outline-none py-1 transition-all" />
+                           className="w-full bg-transparent border-b border-outline-variant focus:border-primary outline-none py-1 transition-all" />
                 </div>
 
                 <div className="flex flex-col gap-1">
                     <label className="text-[10px] font-bold uppercase text-primary">Email</label>
                     <input name="email" type="email" required placeholder="name@example.com"
-                        className="w-full bg-transparent border-b border-outline-variant focus:border-primary outline-none py-1 transition-all" />
+                           className="w-full bg-transparent border-b border-outline-variant focus:border-primary outline-none py-1 transition-all" />
                 </div>
 
                 <div className="flex flex-col gap-1">
                     <label className="text-[10px] font-bold uppercase text-primary">Password</label>
                     <input name="password" type="password" required placeholder="••••••••"
-                        className="w-full bg-transparent border-b border-outline-variant focus:border-primary outline-none py-1 transition-all" />
+                           className="w-full bg-transparent border-b border-outline-variant focus:border-primary outline-none py-1 transition-all" />
                 </div>
             </div>
 
