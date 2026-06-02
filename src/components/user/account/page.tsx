@@ -79,7 +79,59 @@ function AccountProfileForm({
         resetPasswordFields()
         setStatusMessage('Password form enabled.')
     }
+
+    const handleSave = async () => {
+        setIsSaving(true)
+
+        try {
+            if (viewMode === 'password') {
+                if (!newPassword.trim() || !confirmPassword.trim()) {
+                    setStatusMessage('Please complete all password fields.')
+                    return
+                }
+
+                if (newPassword !== confirmPassword) {
+                    setStatusMessage('The new passwords do not match.')
+                    return
+                }
+
+                const updatedUser = await authService.changePassword(currentUser.email, {
+                    newPassword: newPassword.trim(),
+                })
+
+                updateUser(updatedUser)
+                setStatusMessage('Password updated successfully.')
+                setViewMode('profile')
+                setIsEditing(false)
+                resetPasswordFields()
+                return
+            }
+
+            if (!isEditing) {
+                setIsEditing(true)
+                setStatusMessage('Fields unlocked for editing.')
+                return
+            }
+
+            const updatedUser = await authService.updateProfile(currentUser.email, {
+                name: name.trim() || currentUser.name,
+                email: email.trim(),
+            })
+
+            updateUser(updatedUser)
+            setStatusMessage('Profile updated successfully.')
+            setIsEditing(false)
+        } catch (error) {
+            const message = error instanceof Error ? error.message : 'Unable to update profile.'
+            setStatusMessage(message)
+        } finally {
+            setIsSaving(false)
+        }
+    }
+
+    return ()
 }
 
 export default function AccountPage() {
+
 }
