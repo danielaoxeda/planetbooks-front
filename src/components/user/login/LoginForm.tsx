@@ -10,12 +10,16 @@ export default function LoginForm() {
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault()
         setLoading(true)
-        const data = Object.fromEntries(new FormData(e.currentTarget))
+        const formData = new FormData(e.currentTarget)
+        const credentials = {
+            email: String(formData.get('email') ?? ''),
+            password: String(formData.get('password') ?? ''),
+        }
 
         try {
-            const user: any = await authService.login(data)
+            const user = await authService.login(credentials)
             login(user)
-            window.location.href = '/'
+            window.location.href = '/account'
         } catch (err: any) {
             alert(err.message)
         } finally {
@@ -31,9 +35,9 @@ export default function LoginForm() {
             </div>
             <div className="flex flex-col gap-5">
                 <input name="email" type="email" required placeholder="Email Address"
-                    className="w-full bg-transparent border-0 border-b border-outline-variant focus:border-primary focus:ring-0 py-3 transition-all" />
+                       className="w-full bg-transparent border-0 border-b border-outline-variant focus:border-primary focus:ring-0 py-3 transition-all" />
                 <input name="password" type="password" required placeholder="Password"
-                    className="w-full bg-transparent border-0 border-b border-outline-variant focus:border-primary focus:ring-0 py-3 transition-all" />
+                       className="w-full bg-transparent border-0 border-b border-outline-variant focus:border-primary focus:ring-0 py-3 transition-all" />
             </div>
             <button disabled={loading} className="w-full bg-primary text-on-primary font-bold py-4 rounded-lg mt-4 hover:brightness-110 disabled:opacity-50 transition-all">
                 {loading ? 'Authenticating...' : 'Sign In'}

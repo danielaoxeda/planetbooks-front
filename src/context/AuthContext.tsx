@@ -9,7 +9,9 @@ interface User {
 
 interface AuthContextType {
     user: User | null
+    isReady: boolean
     login: (userData: User) => void
+    updateUser: (userData: User) => void
     logout: () => void
 }
 
@@ -17,15 +19,25 @@ export const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
     const [user, setUser] = useState<User | null>(null)
+    const [isReady, setIsReady] = useState(false)
 
     useEffect(() => {
         const savedUser = localStorage.getItem('pb_session')
         Promise.resolve().then(() => {
-            if (savedUser) setUser(JSON.parse(savedUser))
+            if (savedUser) {
+                setUser(JSON.parse(savedUser))
+            }
+
+            setIsReady(true)
         })
     }, [])
 
     const login = (userData: User) => {
+        setUser(userData)
+        localStorage.setItem('pb_session', JSON.stringify(userData))
+    }
+
+    const updateUser = (userData: User) => {
         setUser(userData)
         localStorage.setItem('pb_session', JSON.stringify(userData))
     }
@@ -37,7 +49,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
 
     return (
-        <AuthContext.Provider value={{ user, login, logout }}>
+        <AuthContext.Provider value={{ user, isReady, login, updateUser, logout }}>
             {children}
         </AuthContext.Provider>
     )

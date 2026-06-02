@@ -34,7 +34,7 @@ export default function Navbar() {
 
     return (
         <header key={pathname}
-            className="sticky top-0 z-50 border-b border-outline-variant/80 bg-surface/95 backdrop-blur supports-backdrop-filter:bg-surface/80">
+                className="sticky top-0 z-50 border-b border-outline-variant/80 bg-surface/95 backdrop-blur supports-backdrop-filter:bg-surface/80">
             <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
 
                 {/* LOGO */}
@@ -62,7 +62,7 @@ export default function Navbar() {
                                 className={`rounded-full px-4 py-2 text-sm font-medium transition-colors ${active
                                     ? "bg-primary text-on-primary"
                                     : "text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface"
-                                    }`}
+                                }`}
                             >
                                 {item.name}
                             </Link>
@@ -94,12 +94,16 @@ export default function Navbar() {
                                     {user.name || user.email.split('@')[0]}
                                 </span>
                             </div>
-                            <button
-                                onClick={logout}
-                                className="rounded-full bg-error/10 px-4 py-2 text-sm font-bold text-error hover:bg-error/20 transition-colors"
+                            <Link
+                                href="/account"
+                                aria-current={isActivePath(pathname, "/account") ? "page" : undefined}
+                                className={`rounded-full px-4 py-2 text-sm font-bold transition-colors ${isActivePath(pathname, "/account")
+                                    ? "bg-primary text-on-primary"
+                                    : "bg-surface-container-high text-on-surface-variant hover:bg-surface-container-highest hover:text-on-surface"
+                                }`}
                             >
-                                Logout
-                            </button>
+                                Profile
+                            </Link>
                         </div>
                     ) : (
                         <div className="flex items-center gap-2">
@@ -145,6 +149,20 @@ export default function Navbar() {
                             </div>
                         )}
 
+                        {user ? (
+                            <Link
+                                href="/account"
+                                onClick={() => setMobileMenuOpen(false)}
+                                aria-current={isActivePath(pathname, "/account") ? "page" : undefined}
+                                className={`rounded-xl px-4 py-3 text-sm font-medium transition-colors ${isActivePath(pathname, "/account")
+                                    ? "bg-primary text-on-primary"
+                                    : "bg-surface-container text-on-surface-variant hover:bg-surface-container-high"
+                                }`}
+                            >
+                                Profile
+                            </Link>
+                        ) : null}
+
                         {navItems.map((item) => {
                             const active = isActivePath(pathname, item.href)
                             return (
@@ -155,7 +173,7 @@ export default function Navbar() {
                                     className={`rounded-xl px-4 py-3 text-sm font-medium transition-colors ${active
                                         ? "bg-primary text-on-primary"
                                         : "bg-surface-container text-on-surface-variant hover:bg-surface-container-high"
-                                        }`}
+                                    }`}
                                 >
                                     {item.name}
                                 </Link>
@@ -180,12 +198,16 @@ export default function Navbar() {
 
                         <div className="mt-4 grid grid-cols-2 gap-3">
                             {user ? (
-                                <button
-                                    onClick={() => { logout(); setMobileMenuOpen(false); }}
-                                    className="col-span-2 rounded-xl border border-error/20 bg-error/5 px-4 py-3 text-sm font-bold text-error"
+                                <Link
+                                    href="/account"
+                                    onClick={() => setMobileMenuOpen(false)}
+                                    className={`col-span-2 text-center rounded-xl px-4 py-3 text-sm font-medium transition-colors ${isActivePath(pathname, "/account")
+                                        ? "bg-primary text-on-primary"
+                                        : "bg-surface-container text-on-surface-variant hover:bg-surface-container-high"
+                                    }`}
                                 >
-                                    Logout
-                                </button>
+                                    Profile
+                                </Link>
                             ) : (
                                 <>
                                     <Link
