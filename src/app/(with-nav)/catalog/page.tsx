@@ -1,9 +1,9 @@
 "use client";
 
 import {useEffect, useMemo, useState} from "react";
-import Filters from "@/components/catalog/Filters";
-import ProductCard from "@/components/catalog/ProductCard";
-import Pagination from "@/components/catalog/Pagination";
+import Filters from "@/components/user/catalog/Filters";
+import ProductCard from "@/components/user/catalog/ProductCard";
+import Pagination from "@/components/user/catalog/Pagination";
 
 {/* Books catalog */
 }
@@ -107,8 +107,6 @@ const books = [
     },
 ];
 
-{/* Filters */
-}
 export default function CatalogPage() {
     const [selectedTags, setSelectedTags] = useState<string[]>([]);
     const [selectedLevel, setSelectedLevel] = useState<string>("");

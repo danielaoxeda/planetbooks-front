@@ -1,7 +1,10 @@
 import type {Metadata} from "next";
 import {Geist, Geist_Mono} from "next/font/google";
 import "../globals.css";
-import Navbar from "@/components/navbar/Navbar";
+import Navbar from "@/components/user/navbar/Navbar";
+import Footer from "@/components/user/footer/Footer";
+import {AuthProvider} from "@/context/AuthContext";
+import {CartProvider} from "@/context/CartContext";
 
 const geistSans = Geist({
     variable: "--font-geist-sans",
@@ -28,10 +31,17 @@ export default function RootLayout({
             lang="en"
             className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
         >
-
         <body className="min-h-full flex flex-col">
-        <Navbar/>
-        {children}
+        {/* AuthProvider permite que Navbar y Children compartan datos de sesión.*/}
+        <AuthProvider>
+            <CartProvider>
+                <Navbar/>
+                <main className="flex-1 flex flex-col">
+                    {children}
+                </main>
+                <Footer/>
+            </CartProvider>
+        </AuthProvider>
         </body>
         </html>
     );
