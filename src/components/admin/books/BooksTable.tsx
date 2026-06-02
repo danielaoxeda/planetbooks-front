@@ -1,9 +1,10 @@
 import {Pencil, Trash2,} from "lucide-react";
+import {Product} from "@/types/product";
 
 interface Props {
-    books: any[];
-    onEdit: (book: any) => void;
-    onDelete: (book: any) => void;
+    books: Product[];
+    onEdit: (book: Product) => void;
+    onDelete: (book: Product) => void;
 }
 
 export default function BooksTable({

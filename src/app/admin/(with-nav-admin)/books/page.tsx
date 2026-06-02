@@ -1,15 +1,21 @@
 "use client";
 
 import {useState} from "react";
+
 import {products} from "@/data/products";
+
 import AddBookButton from "@/components/admin/books/AddBookButton";
 import AddBookModal from "@/components/admin/books/AddBookModal";
 import BooksFilters from "@/components/admin/books/BooksFilters";
 import BooksPagination from "@/components/admin/books/BooksPagination";
 import BooksTable from "@/components/admin/books/BooksTable";
 
+import {Product} from "@/types/product";
+
 export default function BooksPage() {
 
+    const [books, setBooks] =
+        useState<Product[]>(products);
 
     const [currentPage, setCurrentPage] =
         useState(1);
@@ -17,126 +23,69 @@ export default function BooksPage() {
     const [modalOpen, setModalOpen] =
         useState(false);
 
-    const [preview, setPreview] =
-        useState("");
-
-    const [formData, setFormData] =
-        useState({
-            title: "",
-            description: "",
-            tag: "",
-            categories: "",
-            level: "",
-            pages: "",
-            format: "",
-            publisher: "",
-            language: "",
-            price: "",
-            image: "",
-        });
-
-    const handleChange = (
-        field: string,
-        value: string
-    ) => {
-        setFormData((prev) => ({
-            ...prev,
-            [field]: value,
-        }));
-    };
-
-    const handleImageUpload = (
-        e: React.ChangeEvent<HTMLInputElement>
-    ) => {
-        const file =
-            e.target.files?.[0];
-
-        if (!file) return;
-
-        const imageUrl =
-            URL.createObjectURL(file);
-
-        setPreview(imageUrl);
-
-        setFormData((prev) => ({
-            ...prev,
-            image: imageUrl,
-        }));
-    };
-
-    const handleSubmit = () => {
-        console.log(formData);
-
-        setModalOpen(false);
-    };
-
     const [search, setSearch] =
         useState("");
 
     const [category, setCategory] =
         useState("All Categories");
-    const filteredBooks = products.filter((book) => {
 
-        const matchesSearch =
-            book.title
-                .toLowerCase()
-                .includes(search.toLowerCase());
+    const filteredBooks =
+        books.filter((book) => {
 
-        const matchesCategory =
-            category === "All Categories" ||
-            book.categories.includes(category);
+            const matchesSearch =
+                book.title
+                    .toLowerCase()
+                    .includes(
+                        search.toLowerCase()
+                    );
 
-        return (
-            matchesSearch &&
-            matchesCategory
-        );
-    });
+            const matchesCategory =
+                category ===
+                "All Categories" ||
 
-    const [selectedBook, setSelectedBook] =
-        useState<any | null>(null);
+                book.categories.includes(
+                    category
+                );
 
-    const [deleteOpen, setDeleteOpen] =
-        useState(false);
-
-
-    const handleEdit = (book: any) => {
-        setSelectedBook(book);
-
-        setFormData({
-            title: book.title,
-            description: book.description,
-            tag: book.tag,
-            categories: book.categories.join(", "),
-            level: book.level,
-            pages: book.pages,
-            format: book.format,
-            publisher: book.publisher,
-            language: book.language,
-            price: book.items?.[0]?.price || "",
-            image: book.image,
+            return (
+                matchesSearch &&
+                matchesCategory
+            );
         });
 
-        setPreview(book.image);
+    const handleDelete = (
+        book: Product
+    ) => {
 
-        setModalOpen(true);
+        setBooks((prev) =>
+            prev.filter(
+                (item) =>
+                    item.id !== book.id
+            )
+        );
     };
 
-    const handleDelete = (book: any) => {
-        setSelectedBook(book);
+    const handleAddBook = (
+        newBook: Product
+    ) => {
 
-        setDeleteOpen(true);
+        setBooks((prev) => [
+            ...prev,
+            newBook,
+        ]);
     };
 
     return (
         <div className="p-4 sm:p-6 lg:p-8 space-y-6">
 
-
             <div className="flex justify-end">
+
                 <AddBookButton
                     onClick={() =>
                         setModalOpen(true)
                     }
                 />
+
             </div>
 
             <AddBookModal
@@ -144,36 +93,43 @@ export default function BooksPage() {
                 onClose={() =>
                     setModalOpen(false)
                 }
-                onSubmit={handleSubmit}
-                formData={formData}
-                onChange={handleChange}
-                preview={preview}
-                onImageUpload={
-                    handleImageUpload
-                }
+                onSave={handleAddBook}
             />
 
             <BooksFilters
                 search={search}
-                onSearchChange={setSearch}
+                onSearchChange={
+                    setSearch
+                }
                 category={category}
-                onCategoryChange={setCategory}
+                onCategoryChange={
+                    setCategory
+                }
             />
 
             <BooksTable
                 books={filteredBooks}
-                onEdit={handleEdit}
-                onDelete={handleDelete}
+                onEdit={(book) =>
+                    console.log(
+                        "Edit:",
+                        book
+                    )
+                }
+                onDelete={
+                    handleDelete
+                }
             />
 
             <BooksPagination
-                currentPage={currentPage}
+                currentPage={
+                    currentPage
+                }
                 totalPages={3}
-                onPageChange={setCurrentPage}
+                onPageChange={
+                    setCurrentPage
+                }
             />
 
         </div>
-
-
     );
 }
