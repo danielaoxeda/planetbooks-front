@@ -26,7 +26,7 @@ manage accounts, and (in future stages) allow administrators to control the syst
 - 📚 **Catalog** — browse and explore available books
 - 🔐 **Login / Register** — user authentication system
 
-### 🛠️ Admin Views *(coming soon)*
+### 🛠️ Admin Views
 - 📊 Dashboard for system management
 - 📖 Book management (CRUD)
 - 👥 User management
