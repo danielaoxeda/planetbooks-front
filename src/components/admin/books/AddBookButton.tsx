@@ -1,14 +1,8 @@
 "use client";
 
 import {useState} from "react";
-
 import {Plus, Upload} from "lucide-react";
-
 import {products} from "@/data/products";
-
-import BooksFilters from "@/components/admin/books/BooksFilters";
-import BooksTable from "@/components/admin/books/BooksTable";
-import BooksPagination from "@/components/admin/books/BooksPagination";
 
 interface AddBookButtonProps {
     onClick?: () => void
@@ -45,25 +39,17 @@ export default function BooksPage({onClick}: AddBookButtonProps) {
             price: "",
         });
 
-    const filteredBooks =
-        books.filter((book) =>
-            book.title
-                .toLowerCase()
-                .includes(
-                    search.toLowerCase()
-                )
-        );
 
     const handleChange = (
         field: string,
         value: string
     ) => {
         setFormData((prev) => ({
-            ...prev,
-            [field]: value,
-        }));
+                ...prev,
+                [field]: value,
+            })
+        );
     };
-
     const handleImageUpload = (
         e: React.ChangeEvent<HTMLInputElement>
     ) => {
@@ -142,39 +128,17 @@ export default function BooksPage({onClick}: AddBookButtonProps) {
     };
 
     return (
-        <div className="p-4 sm:p-6 lg:p-8 space-y-6">
-
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-
-                <button
-                    onClick={() =>
-                        setModalOpen(true)
-                    }
-                    className="flex items-center gap-2 bg-[#006b11] text-white px-5 py-3 rounded-xl hover:bg-[#00520d] transition"
-                >
-                    <Plus size={18}/>
-
-                    Add Book
-                </button>
-
-            </div>
-
-            <BooksFilters
-                search={search}
-                onSearchChange={setSearch}
-            />
-
-            <BooksTable
-                books={filteredBooks}
-            />
-
-            <BooksPagination
-                currentPage={currentPage}
-                totalPages={3}
-                onPageChange={
-                    setCurrentPage
+        <div className="p-4 sm:p-6 lg:p-8 space-y-3">
+            <button
+                onClick={() =>
+                    setModalOpen(true)
                 }
-            />
+                className="flex items-center gap-2 bg-[#006b11] text-white px-5 py-3 rounded-xl hover:bg-[#00520d] transition"
+            >
+                <Plus size={18}/>
+
+                Add Book
+            </button>
 
             {modalOpen && (
                 <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
@@ -221,12 +185,8 @@ export default function BooksPage({onClick}: AddBookButtonProps) {
                                 className="border border-gray-200 rounded-xl px-4 py-3"
                             />
 
-                            <input
-                                type="text"
-                                placeholder="Tag"
-                                value={
-                                    formData.tag
-                                }
+                            <select
+                                value={formData.tag}
                                 onChange={(e) =>
                                     handleChange(
                                         "tag",
@@ -234,7 +194,19 @@ export default function BooksPage({onClick}: AddBookButtonProps) {
                                     )
                                 }
                                 className="border border-gray-200 rounded-xl px-4 py-3"
-                            />
+                            >
+                                <option value="">
+                                    Select Type
+                                </option>
+
+                                <option value="Practice Tests">
+                                    Practice Tests
+                                </option>
+
+                                <option value="Coursebook">
+                                    Coursebook
+                                </option>
+                            </select>
 
                             <textarea
                                 placeholder="Description"
@@ -250,12 +222,8 @@ export default function BooksPage({onClick}: AddBookButtonProps) {
                                 className="border border-gray-200 rounded-xl px-4 py-3 md:col-span-2 min-h-[120px]"
                             />
 
-                            <input
-                                type="text"
-                                placeholder="Level"
-                                value={
-                                    formData.level
-                                }
+                            <select
+                                value={formData.level}
                                 onChange={(e) =>
                                     handleChange(
                                         "level",
@@ -263,14 +231,42 @@ export default function BooksPage({onClick}: AddBookButtonProps) {
                                     )
                                 }
                                 className="border border-gray-200 rounded-xl px-4 py-3"
-                            />
+                            >
+                                <option value="">
+                                    Select Level
+                                </option>
 
-                            <input
-                                type="text"
-                                placeholder="Publisher"
-                                value={
-                                    formData.publisher
-                                }
+                                <option value="YLE - Starters, Movers & Flyers">
+                                    YLE - Starters, Movers & Flyers
+                                </option>
+
+                                <option value="KET - A2 Key">
+                                    KET - A2 Key
+                                </option>
+
+                                <option value="PET - B1">
+                                    PET - B1
+                                </option>
+
+                                <option value="FCE - B2">
+                                    FCE - B2
+                                </option>
+
+                                <option value="CAE - C1">
+                                    CAE - C1
+                                </option>
+
+                                <option value="IELTS">
+                                    IELTS
+                                </option>
+
+                                <option value="TOEFL">
+                                    TOEFL
+                                </option>
+                            </select>
+
+                            <select
+                                value={formData.publisher}
                                 onChange={(e) =>
                                     handleChange(
                                         "publisher",
@@ -278,22 +274,31 @@ export default function BooksPage({onClick}: AddBookButtonProps) {
                                     )
                                 }
                                 className="border border-gray-200 rounded-xl px-4 py-3"
-                            />
+                            >
+                                <option value="">
+                                    Select Publisher
+                                </option>
 
-                            <input
-                                type="text"
-                                placeholder="Pages"
-                                value={
-                                    formData.pages
-                                }
-                                onChange={(e) =>
-                                    handleChange(
-                                        "pages",
-                                        e.target.value
-                                    )
-                                }
-                                className="border border-gray-200 rounded-xl px-4 py-3"
-                            />
+                                <option value="Cambridge">
+                                    Cambridge
+                                </option>
+
+                                <option value="Oxford">
+                                    Oxford
+                                </option>
+
+                                <option value="Pearson">
+                                    Pearson
+                                </option>
+
+                                <option value="ETS">
+                                    ETS
+                                </option>
+
+                                <option value="Other">
+                                    Other
+                                </option>
+                            </select>
 
                             <input
                                 type="text"

@@ -2,10 +2,14 @@ import {Pencil, Trash2,} from "lucide-react";
 
 interface Props {
     books: any[];
+    onEdit: (book: any) => void;
+    onDelete: (book: any) => void;
 }
 
 export default function BooksTable({
                                        books,
+                                       onEdit,
+                                       onDelete,
                                    }: Props) {
     return (
         <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm">
@@ -89,17 +93,18 @@ export default function BooksTable({
                                 <div className="flex justify-end gap-2">
 
                                     <button
+                                        onClick={() => onEdit(book)}
                                         className="w-10 h-10 rounded-xl border border-gray-200 flex items-center justify-center hover:bg-gray-100"
                                     >
                                         <Pencil size={18}/>
                                     </button>
 
                                     <button
+                                        onClick={() => onDelete(book)}
                                         className="w-10 h-10 rounded-xl border border-red-200 text-red-500 flex items-center justify-center hover:bg-red-50"
                                     >
                                         <Trash2 size={18}/>
                                     </button>
-
                                 </div>
 
                             </td>

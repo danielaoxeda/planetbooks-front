@@ -1,20 +1,15 @@
 "use client";
 
 import {useState} from "react";
-
 import {products} from "@/data/products";
-
-import BooksFilters from "@/components/admin/books/BooksFilters";
-import BooksTable from "@/components/admin/books/BooksTable";
-import BooksPagination from "@/components/admin/books/BooksPagination";
-
 import AddBookButton from "@/components/admin/books/AddBookButton";
 import AddBookModal from "@/components/admin/books/AddBookModal";
+import BooksFilters from "@/components/admin/books/BooksFilters";
+import BooksPagination from "@/components/admin/books/BooksPagination";
+import BooksTable from "@/components/admin/books/BooksTable";
 
 export default function BooksPage() {
 
-    const [search, setSearch] =
-        useState("");
 
     const [currentPage, setCurrentPage] =
         useState(1);
@@ -75,17 +70,66 @@ export default function BooksPage() {
         setModalOpen(false);
     };
 
-    const filteredBooks =
-        products.filter((book) =>
+    const [search, setSearch] =
+        useState("");
+
+    const [category, setCategory] =
+        useState("All Categories");
+    const filteredBooks = products.filter((book) => {
+
+        const matchesSearch =
             book.title
                 .toLowerCase()
-                .includes(
-                    search.toLowerCase()
-                )
+                .includes(search.toLowerCase());
+
+        const matchesCategory =
+            category === "All Categories" ||
+            book.categories.includes(category);
+
+        return (
+            matchesSearch &&
+            matchesCategory
         );
+    });
+
+    const [selectedBook, setSelectedBook] =
+        useState<any | null>(null);
+
+    const [deleteOpen, setDeleteOpen] =
+        useState(false);
+
+
+    const handleEdit = (book: any) => {
+        setSelectedBook(book);
+
+        setFormData({
+            title: book.title,
+            description: book.description,
+            tag: book.tag,
+            categories: book.categories.join(", "),
+            level: book.level,
+            pages: book.pages,
+            format: book.format,
+            publisher: book.publisher,
+            language: book.language,
+            price: book.items?.[0]?.price || "",
+            image: book.image,
+        });
+
+        setPreview(book.image);
+
+        setModalOpen(true);
+    };
+
+    const handleDelete = (book: any) => {
+        setSelectedBook(book);
+
+        setDeleteOpen(true);
+    };
 
     return (
         <div className="p-4 sm:p-6 lg:p-8 space-y-6">
+
 
             <div className="flex justify-end">
                 <AddBookButton
@@ -94,21 +138,6 @@ export default function BooksPage() {
                     }
                 />
             </div>
-
-            <BooksFilters
-                search={search}
-                onSearchChange={setSearch}
-            />
-
-            <BooksTable
-                books={filteredBooks}
-            />
-
-            <BooksPagination
-                currentPage={currentPage}
-                totalPages={3}
-                onPageChange={setCurrentPage}
-            />
 
             <AddBookModal
                 open={modalOpen}
@@ -124,6 +153,27 @@ export default function BooksPage() {
                 }
             />
 
+            <BooksFilters
+                search={search}
+                onSearchChange={setSearch}
+                category={category}
+                onCategoryChange={setCategory}
+            />
+
+            <BooksTable
+                books={filteredBooks}
+                onEdit={handleEdit}
+                onDelete={handleDelete}
+            />
+
+            <BooksPagination
+                currentPage={currentPage}
+                totalPages={3}
+                onPageChange={setCurrentPage}
+            />
+
         </div>
+
+
     );
 }

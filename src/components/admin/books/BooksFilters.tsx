@@ -2,7 +2,14 @@ import {Search, SlidersHorizontal} from "lucide-react";
 
 interface Props {
     search: string;
+
     onSearchChange: (
+        value: string
+    ) => void;
+
+    category: string;
+
+    onCategoryChange: (
         value: string
     ) => void;
 }
@@ -10,6 +17,8 @@ interface Props {
 export default function BooksFilters({
                                          search,
                                          onSearchChange,
+                                         category,
+                                         onCategoryChange,
                                      }: Props) {
     return (
         <div
@@ -37,16 +46,35 @@ export default function BooksFilters({
             <div className="flex gap-3">
 
                 <select
+                    value={category}
+                    onChange={(e) =>
+                        onCategoryChange(
+                            e.target.value
+                        )
+                    }
                     className="px-4 py-3 rounded-xl border border-gray-200 text-sm"
                 >
                     <option>
                         All Categories
                     </option>
-
+                    <option>
+                        YLE
+                    </option>
+                    <option>
+                        A2 Key
+                    </option>
+                    <option>
+                        B1 Preliminary
+                    </option>
+                    <option>
+                        B2 First
+                    </option>
+                    <option>
+                        C1 Advanced
+                    </option>
                     <option>
                         IELTS
                     </option>
-
                     <option>
                         TOEFL
                     </option>
