@@ -1,6 +1,6 @@
 "use client";
 import React, {useState} from "react";
-import type {Product, ProductItem} from "@/data/products";
+import type {Product, ProductItem} from "@/types/product";
 import {ShoppingCart} from "lucide-react";
 import {useCart} from "@/context/CartContext";
 

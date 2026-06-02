@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Product } from "@/data/products";
+import type { Product } from "@/types/product";
 
 export default function BooksSection({ books }: { books: Product[] }) {
     return (
