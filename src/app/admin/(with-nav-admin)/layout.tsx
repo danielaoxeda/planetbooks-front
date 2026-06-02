@@ -78,7 +78,7 @@ export default function RootLayout({
                     open={sidebarOpen}
                     onClose={() => setSidebarOpen(false)}
                 />
-                <div className="flex-1 flex flex-col w-full min-h-screen md:min-h-auto overflow-x-hidden">
+                <div className="flex-1 flex flex-col w-full min-h-screen overflow-x-hidden md:ml-64">
                     <TopBar
                         title={currentTopbar.title}
                         subtitle={currentTopbar.subtitle}
