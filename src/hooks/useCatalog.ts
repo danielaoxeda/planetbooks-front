@@ -44,17 +44,34 @@ export function useCatalog() {
                 const res = await fetch(
                     "https://planetbook.solidwebs.com/api/v1/products?page=0&size=100",
                     {
+                        method: "GET",
                         headers: {
                             "Content-Type": "application/json",
-                            Authorization: `Bearer ${token}`,
+                            ...(token && {
+                                Authorization: `Bearer ${token}`,
+                            }),
                         },
                     }
                 );
 
+                // 🧪 LOG 1: status del backend
+                console.log("STATUS:", res.status);
+
                 const data = await res.json();
-                setBooks(data.content ?? []);
+
+                // 🧪 LOG 2: respuesta cruda del backend
+                console.log("RAW DATA BACKEND FULL:", JSON.stringify(data, null, 2));
+
+                const normalized = Array.isArray(data)
+                    ? data
+                    : data.content ?? [];
+
+                // 🧪 LOG 3: data final que usará el frontend
+                console.log("NORMALIZED BOOKS:", normalized);
+
+                setBooks(normalized);
             } catch (err) {
-                console.error(err);
+                console.error("ERROR FETCH PRODUCTS:", err);
             } finally {
                 setLoading(false);
             }
@@ -67,7 +84,9 @@ export function useCatalog() {
         let result = books.filter(book => {
             const matchTag =
                 selectedTags.length === 0 ||
-                selectedTags.some(t => book.categories.includes(t));
+                selectedTags.some(t =>
+                    book.categories?.includes(t)
+                );
 
             const matchLevel =
                 !selectedLevel || book.level === selectedLevel;
@@ -76,19 +95,23 @@ export function useCatalog() {
 
             const matchSearch =
                 !q ||
-                book.title.toLowerCase().includes(q) ||
-                book.description.toLowerCase().includes(q) ||
-                book.tag.toLowerCase().includes(q);
+                book.title?.toLowerCase().includes(q) ||
+                book.description?.toLowerCase().includes(q) ||
+                book.tag?.toLowerCase().includes(q);
 
             return matchTag && matchLevel && matchSearch;
         });
 
         if (sortBy === "Price: Low to High") {
-            result.sort((a, b) => getPrice(a) - getPrice(b));
+            result = [...result].sort(
+                (a, b) => getPrice(a) - getPrice(b)
+            );
         }
 
         if (sortBy === "Price: High to Low") {
-            result.sort((a, b) => getPrice(b) - getPrice(a));
+            result = [...result].sort(
+                (a, b) => getPrice(b) - getPrice(a)
+            );
         }
 
         return result;
