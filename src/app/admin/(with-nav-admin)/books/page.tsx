@@ -2,8 +2,6 @@
 
 import {useState} from "react";
 
-import {products} from "@/data/products";
-
 import AddBookButton from "@/components/admin/books/AddBookButton";
 import AddBookModal from "@/components/admin/books/AddBookModal";
 import BooksFilters from "@/components/admin/books/BooksFilters";
@@ -12,11 +10,15 @@ import BooksTable from "@/components/admin/books/BooksTable";
 import EditBookModal from "@/components/admin/books/EditBookModal";
 
 import {Product} from "@/types/product";
+import {useProducts} from "@/hooks/useProducts";
 
 export default function BooksPage() {
 
-    const [books, setBooks] =
-        useState<Product[]>(products);
+    const {
+        books,
+        loading,
+        refreshProducts,
+    } = useProducts();
 
     const [currentPage, setCurrentPage] =
         useState(1);
@@ -60,26 +62,98 @@ export default function BooksPage() {
             );
         });
 
-    const handleDelete = (
-        book: Product
-    ) => {
-
-        setBooks((prev) =>
-            prev.filter(
-                (item) =>
-                    item.id !== book.id
-            )
-        );
-    };
-
-    const handleAddBook = (
+    const handleAddBook = async (
         newBook: Product
     ) => {
 
-        setBooks((prev) => [
-            ...prev,
-            newBook,
-        ]);
+        try {
+
+            const token =
+                localStorage.getItem("token");
+
+            await fetch(
+                "https://planetbook.solidwebs.com/api/v1/products",
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type":
+                            "application/json",
+                        Authorization:
+                            `Bearer ${token}`,
+                    },
+                    body: JSON.stringify(
+                        newBook
+                    ),
+                }
+            );
+
+            setModalOpen(false);
+
+            await refreshProducts();
+
+        } catch (error) {
+            console.error(error);
+        }
+    };
+
+    const handleUpdateBook = async (
+        updatedBook: Product
+    ) => {
+
+        try {
+
+            const token =
+                localStorage.getItem("token");
+
+            await fetch(
+                `https://planetbook.solidwebs.com/api/v1/products/${updatedBook.id}`,
+                {
+                    method: "PUT",
+                    headers: {
+                        "Content-Type":
+                            "application/json",
+                        Authorization:
+                            `Bearer ${token}`,
+                    },
+                    body: JSON.stringify(
+                        updatedBook
+                    ),
+                }
+            );
+
+            setEditModalOpen(false);
+
+            await refreshProducts();
+
+        } catch (error) {
+            console.error(error);
+        }
+    };
+    const handleDelete = async (
+        book: Product
+    ) => {
+
+        try {
+
+            const token =
+                localStorage.getItem("token");
+
+            await fetch(
+                `https://planetbook.solidwebs.com/api/v1/products/${book.id}`,
+                {
+                    method: "DELETE",
+                    headers: {
+                        Authorization:
+                            `Bearer ${token}`,
+                    },
+                }
+            );
+
+            await refreshProducts();
+
+        } catch (error) {
+            console.error(error);
+        }
     };
 
     const handleEdit = (
@@ -91,18 +165,14 @@ export default function BooksPage() {
         setEditModalOpen(true);
     };
 
-    const handleUpdateBook = (
-        updatedBook: Product
-    ) => {
 
-        setBooks((prev) =>
-            prev.map((book) =>
-                book.id === updatedBook.id
-                    ? updatedBook
-                    : book
-            )
+    if (loading) {
+        return (
+            <div className="flex justify-center py-10">
+                Loading books...
+            </div>
         );
-    };
+    }
 
     return (
         <div className="p-4 sm:p-6 lg:p-8 space-y-6">
