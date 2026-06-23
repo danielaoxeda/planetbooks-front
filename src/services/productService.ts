@@ -12,3 +12,21 @@ export async function getProducts() {
 
     return response.json();
 }
+
+export async function getProductById(
+    id: number
+) {
+
+    const response = await fetch(
+        `${API_URL}/products/${id}`,
+        {
+            cache: "no-store",
+        }
+    );
+
+    if (!response.ok) {
+        return null;
+    }
+
+    return response.json();
+}
