@@ -21,7 +21,7 @@ export default function BooksByLevelChart() {
     }, [books]);
 
     return (
-        <section className="bg-white rounded-2xl p-6 shadow-sm border">
+        <section className="bg-white rounded-2xl border border-gray-200 p-8 shadow-sm h-[400px] flex flex-col">
             <h3 className="text-lg font-bold mb-4">
                 Books by Level
             </h3>
