@@ -15,7 +15,9 @@ export async function getOrdersSummary() {
                 }),
             },
         }
-    );
+    )
+    console.log("STATUS:", response.status);
+    console.log("STATUS TEXT:", response.statusText);
 
     if (!response.ok) {
         throw new Error(

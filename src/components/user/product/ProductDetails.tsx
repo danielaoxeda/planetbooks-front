@@ -1,5 +1,5 @@
 import React from "react";
-import {Product} from "@/data/products";
+import { Product } from "@/types/product";
 import {ChevronRight} from "lucide-react";
 
 interface Props {
