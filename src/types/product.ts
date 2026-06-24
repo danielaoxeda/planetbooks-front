@@ -1,10 +1,15 @@
 export interface ProductItem {
+    id: number;
+    productId: number;
     key: string;
     title: string;
     price: number;
-    description: string;
-    default?: boolean;
     image: string;
+    description: string;
+    pages: string;
+    format: string;
+    stock: number;
+    isDefault: boolean;
 }
 
 export interface Product {
@@ -15,7 +20,7 @@ export interface Product {
     categories: string[];
     level: string;
     image: string;
-    gallery?: string[];
+    gallery: string[];
     pages: string;
     format: string;
     publisher: string;
