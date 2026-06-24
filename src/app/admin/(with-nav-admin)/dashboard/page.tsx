@@ -1,7 +1,8 @@
 import ActivityFeed from "@/components/admin/dashboard/ActivityFeed";
-import BooksTable from "@/components/admin/dashboard/BooksTable";
 import SalesChart from "@/components/admin/dashboard/SalesChart";
 import StatsCards from "@/components/admin/dashboard/StatsCards";
+import BooksByLevelChart from "@/components/admin/dashboard/BooksByLevelChart";
+import CategoryChart from "@/components/admin/dashboard/CategoryChart";
 
 export default function AdminDashboardPage() {
     return (
@@ -19,8 +20,8 @@ export default function AdminDashboardPage() {
                     <ActivityFeed/>
 
                 </div>
-
-                <BooksTable/>
+                <BooksByLevelChart/>
+                <CategoryChart/>
 
             </div>
         </div>

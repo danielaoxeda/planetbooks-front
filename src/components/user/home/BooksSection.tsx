@@ -1,5 +1,5 @@
 import Link from "next/link";
-import type { Product } from "@/types/product";
+import { Product } from "@/types/product";
 
 export default function BooksSection({ books }: { books: Product[] }) {
     return (
@@ -14,7 +14,7 @@ export default function BooksSection({ books }: { books: Product[] }) {
 
                     {books.map((product) => {
                         const item =
-                            product.items?.find(i => i.default) || product.items?.[0];
+                            product.items?.find(i => i.isDefault) || product.items?.[0];
 
                         return (
                             <Link
