@@ -14,6 +14,12 @@ export interface CartItem {
     quantity: number;
 }
 
+export interface CheckoutItem {
+    productId: number;
+    itemKey: string;
+    quantity: number;
+}
+
 interface CartContextType {
     items: CartItem[];
     isHydrated: boolean;
@@ -23,6 +29,7 @@ interface CartContextType {
     updateQuantity: (itemKey: string, quantity: number) => void;
     removeFromCart: (itemKey: string) => void;
     clearCart: () => void;
+    getCheckoutPayload: () => CheckoutItem[];
 }
 
 const CART_STORAGE_KEY = "pb_cart";
@@ -66,6 +73,14 @@ export function CartProvider({children}: { children: React.ReactNode }) {
         if (!isHydrated) return;
         localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(items));
     }, [items, isHydrated]);
+
+    const getCheckoutPayload = () => {
+        return items.map(item => ({
+            productId: item.productId,
+            itemKey: item.itemKey,
+            quantity: item.quantity,
+        }));
+    };
 
     const addToCart = (product: Product, item: ProductItem, quantity = 1) => {
         const normalizedQuantity = Math.max(1, quantity);
@@ -132,6 +147,7 @@ export function CartProvider({children}: { children: React.ReactNode }) {
         updateQuantity,
         removeFromCart,
         clearCart,
+        getCheckoutPayload
     };
 
     return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
