@@ -58,18 +58,7 @@ export default function ProductDetailClient({product,}: Props) {
                     <ProductDetails product={product}
                     />
 
-                    <div
-                        className="
-                            rounded-xl
-                            border
-                            border-outline-variant
-                            bg-surface-container-lowest
-                            px-4
-                            py-5
-                            sm:px-6
-                            shadow-sm
-                        "
-                    >
+                    <div className="rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-5 sm:px-6 shadow-sm">
                         <ProductPurchase
                             product={product}
                             onSelectItems={
