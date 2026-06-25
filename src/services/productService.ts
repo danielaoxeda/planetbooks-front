@@ -1,33 +1,24 @@
-import { API_URL } from "@/lib/api";
+import api from "@/lib/axios";
+import {AxiosError} from "axios";
 
 export async function getProducts() {
 
-    const response = await fetch(
-        `${API_URL}/products?page=0&size=100`
-    );
+    const response =
+        await api.get("/products");
 
-    if (!response.ok) {
-        throw new Error("Error loading products");
-    }
-
-    return response.json();
+    return response.data;
 }
 
-export async function getProductById(
-    id: number
-) {
-
-    const response = await fetch(
-        `${API_URL}/products/${id}`,
-        {
-            cache: "no-store",
+export async function getProductById(id: number) {
+    try {
+        const response =
+            await api.get(`/products/${id}`);
+        return response.data;
+    } catch (error) {
+        const axiosError = error as AxiosError;
+        if(axiosError.response?.status === 404) {
+            return null;
         }
-    );
-
-    if (!response.ok) {
-        return null;
+        throw error;
     }
-
-    return response.json();
 }
-
