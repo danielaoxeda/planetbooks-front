@@ -2,7 +2,8 @@ import api from "@/lib/axios";
 import {
     LoginRequest,
     RegisterRequest,
-    LoginResponse
+    LoginResponse,
+    RegisterResponse
 } from "@/types/auth";
 
 export const authService = {
@@ -17,7 +18,7 @@ export const authService = {
         return response.data;
     },
 
-    async register(data: RegisterRequest) {
+    async register(data: RegisterRequest): Promise<RegisterResponse> {
 
         const response = await api.post(
             "/auth/register",

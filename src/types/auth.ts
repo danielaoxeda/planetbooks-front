@@ -16,3 +16,5 @@ export interface LoginResponse {
     token: string;
     user: User;
 }
+
+export type RegisterResponse = LoginResponse;
