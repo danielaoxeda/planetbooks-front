@@ -5,6 +5,7 @@ import {useState} from "react";
 import {Upload} from "lucide-react";
 
 import {Product} from "@/types/product";
+import {createProduct} from "@/services/productService";
 
 interface Props {
     open: boolean;
@@ -83,72 +84,78 @@ export default function AddBookModal({
             price: "",
         });
     };
+    const handleSubmit = async () => {
 
-    const handleSubmit = () => {
+        try {
 
-        const newBook: Product = {
-            id: Date.now(),
+            const payload = {
 
-            title: formData.title,
+                title: formData.title,
 
-            description:
-            formData.description,
+                description:
+                formData.description,
 
-            tag: formData.tag,
-
-            categories: [
+                tag:
                 formData.tag,
-            ],
 
-            level:
-            formData.level,
+                categories: [
+                    formData.tag
+                ],
 
-            image:
-                formData.image ||
-                "/books/default.png",
+                level:
+                formData.level,
 
-            pages:
-            formData.pages,
+                image:
+                formData.image,
 
-            format:
-            formData.format,
+                pages:
+                    Number(formData.pages),
 
-            publisher:
-            formData.publisher,
+                format:
+                formData.format,
 
-            language:
-            formData.language,
+                publisher:
+                formData.publisher,
 
-            items: [
-                {
-                    key:
-                        crypto.randomUUID(),
+                language:
+                formData.language,
 
-                    title:
-                        "Digital PDF",
+                items: [
+                    {
+                        key: "pdf",
 
-                    price:
-                        Number(
-                            formData.price
-                        ),
+                        title: "PDF",
 
-                    description:
-                        "Instant download",
+                        price:
+                            Number(
+                                formData.price
+                            ),
 
-                    default: true,
+                        stock: 100,
 
-                    image:
-                        formData.image ||
-                        "/books/default.png",
-                },
-            ],
-        };
+                        isDefault: true
+                    }
+                ]
+            };
 
-        onSave(newBook);
+            const savedBook =
+                await createProduct(
+                    payload
+                );
 
-        resetForm();
+            onSave(savedBook);
 
-        onClose();
+            resetForm();
+
+            onClose();
+
+        } catch (error) {
+
+            console.error(
+                "Error creating product",
+                error
+            );
+        }
     };
 
     if (!open) return null;
