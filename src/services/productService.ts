@@ -22,3 +22,14 @@ export async function getProductById(id: number) {
         throw error;
     }
 }
+
+export async function createProduct(product: any) {
+
+    const response =
+        await api.post(
+            "/products",
+            product
+        );
+
+    return response.data;
+}
