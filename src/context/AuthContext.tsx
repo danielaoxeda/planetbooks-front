@@ -29,23 +29,25 @@ export const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
 
-    const [user, setUser] = useState<User | null>(() => {
+    const [user, setUser] = useState<User | null>(null)
+    const [token, setToken] = useState<string | null>(null)
+    const [isReady, setIsReady] = useState(false)
+
+    // Load session from localStorage only on client side
+    useEffect(() => {
         try {
             const savedSession = localStorage.getItem("pb_session")
-            return savedSession ? (JSON.parse(savedSession) as Session).user : null
-        } catch {
-            return null
+            if (savedSession) {
+                const session = JSON.parse(savedSession) as Session
+                setUser(session.user)
+                setToken(session.token)
+            }
+        } catch (error) {
+            console.error("Failed to load session from localStorage:", error)
+        } finally {
+            setIsReady(true)
         }
-    })
-    const [token, setToken] = useState<string | null>(() => {
-        try {
-            const savedSession = localStorage.getItem("pb_session")
-            return savedSession ? (JSON.parse(savedSession) as Session).token : null
-        } catch {
-            return null
-        }
-    })
-    const [isReady, setIsReady] = useState(true)
+    }, [])
 
     const login = (userData: User, jwt: string) => {
 

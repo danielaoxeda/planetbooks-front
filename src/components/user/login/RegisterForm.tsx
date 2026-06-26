@@ -1,10 +1,8 @@
 'use client'
 import { useState } from 'react'
 import { authService } from '@/services/authService'
-import { useAuth } from '@/context/AuthContext'
 
 export default function RegisterForm({ onSwitch }: { onSwitch: () => void }) {
-    const { login } = useAuth()
     const [loading, setLoading] = useState(false)
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -18,26 +16,11 @@ export default function RegisterForm({ onSwitch }: { onSwitch: () => void }) {
         }
 
         try {
-            const response = await authService.register(data)
-
-            // If backend returned token + user, log the user in and redirect
-            if (response && response.token && response.user) {
-                login(response.user, response.token)
-
-                if (response.user.role === 'ADMIN') {
-                    window.location.href = '/admin'
-                } else {
-                    window.location.href = '/account'
-                }
-
-                return
-            }
-
+            await authService.register(data)
             alert("Registration successful! Welcome to Planet Books.")
             onSwitch()
-        } catch (err: unknown) {
-            const message = err instanceof Error ? err.message : String(err)
-            alert(message)
+        } catch (err: any) {
+            alert(err.message)
         } finally {
             setLoading(false)
         }

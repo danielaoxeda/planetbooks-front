@@ -30,7 +30,7 @@ export default function LoginForm() {
 
             if (response.user.role === "ADMIN") {
 
-                window.location.href = "/admin"
+                window.location.href = "/admin/dashboard"
 
             } else {
 

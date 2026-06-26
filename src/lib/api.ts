@@ -1,2 +1,2 @@
 export const API_URL =
-    "https://planetbook.solidwebs.com/api/v1";
+    "https://planetbook.solidwebs.com/api";
