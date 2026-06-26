@@ -1,62 +1,123 @@
 'use client'
-import { createContext, useContext, useState, useEffect } from 'react'
+
+import { createContext, useContext, useEffect, useState } from 'react'
 
 interface User {
+    id: number
     name: string
     email: string
     role: 'ADMIN' | 'USER'
+    enabled: boolean
 }
 
 interface AuthContextType {
     user: User | null
+    token: string | null
     isReady: boolean
-    login: (userData: User) => void
+
+    login: (userData: User, token: string) => void
     updateUser: (userData: User) => void
     logout: () => void
+}
+
+interface Session {
+    user: User
+    token: string
 }
 
 export const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-    const [user, setUser] = useState<User | null>(null)
-    const [isReady, setIsReady] = useState(false)
 
-    useEffect(() => {
-        const savedUser = localStorage.getItem('pb_session')
-        Promise.resolve().then(() => {
-            if (savedUser) {
-                setUser(JSON.parse(savedUser))
-            }
+    const [user, setUser] = useState<User | null>(() => {
+        try {
+            const savedSession = localStorage.getItem("pb_session")
+            return savedSession ? (JSON.parse(savedSession) as Session).user : null
+        } catch {
+            return null
+        }
+    })
+    const [token, setToken] = useState<string | null>(() => {
+        try {
+            const savedSession = localStorage.getItem("pb_session")
+            return savedSession ? (JSON.parse(savedSession) as Session).token : null
+        } catch {
+            return null
+        }
+    })
+    const [isReady, setIsReady] = useState(true)
 
-            setIsReady(true)
-        })
-    }, [])
+    const login = (userData: User, jwt: string) => {
 
-    const login = (userData: User) => {
         setUser(userData)
-        localStorage.setItem('pb_session', JSON.stringify(userData))
+        setToken(jwt)
+
+        localStorage.setItem(
+            "pb_session",
+            JSON.stringify({
+                user: userData,
+                token: jwt
+            })
+        )
     }
 
     const updateUser = (userData: User) => {
+
         setUser(userData)
-        localStorage.setItem('pb_session', JSON.stringify(userData))
+
+        if (token) {
+
+            localStorage.setItem(
+                "pb_session",
+                JSON.stringify({
+                    user: userData,
+                    token
+                })
+            )
+
+        }
+
     }
 
     const logout = () => {
+
         setUser(null)
-        localStorage.removeItem('pb_session')
-        window.location.href = '/login'
+        setToken(null)
+
+        localStorage.removeItem("pb_session")
+
+        window.location.href = "/login"
+
     }
 
     return (
-        <AuthContext.Provider value={{ user, isReady, login, updateUser, logout }}>
+
+        <AuthContext.Provider
+            value={{
+                user,
+                token,
+                isReady,
+                login,
+                updateUser,
+                logout
+            }}
+        >
+
             {children}
+
         </AuthContext.Provider>
+
     )
+
 }
 
 export const useAuth = () => {
+
     const context = useContext(AuthContext)
-    if (!context) throw new Error('useAuth must be used within AuthProvider')
+
+    if (!context)
+        throw new Error("useAuth must be used within AuthProvider")
+
     return context
+
 }
