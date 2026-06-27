@@ -73,6 +73,7 @@ export default function RootLayout({
         >
         <body className="min-h-full flex flex-col md:flex-row overflow-x-hidden">
         <AuthProvider>
+
             <CartProvider>
                 <Sidebar
                     open={sidebarOpen}
