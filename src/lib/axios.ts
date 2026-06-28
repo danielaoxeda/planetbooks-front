@@ -9,4 +9,25 @@ const api =
         }
     });
 
+// Add Authorization header from localStorage
+api.interceptors.request.use(
+    (config) => {
+        try {
+            const session = localStorage.getItem("pb_session");
+            if (session) {
+                const { token } = JSON.parse(session);
+                if (token) {
+                    config.headers.Authorization = `Bearer ${token}`;
+                }
+            }
+        } catch (error) {
+            // Silently fail if localStorage is not available
+        }
+        return config;
+    },
+    (error) => {
+        return Promise.reject(error);
+    }
+);
+
 export default api;

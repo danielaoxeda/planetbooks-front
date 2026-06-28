@@ -29,8 +29,31 @@ function isActivePath(pathname: string, href: string) {
 export default function Navbar() {
     const pathname = usePathname() ?? "/"
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
-    const { user, logout } = useAuth()
+    const { user, isReady } = useAuth()
     const { cartCount } = useCart()
+    const mounted = typeof window !== 'undefined'
+
+    // Don't render until client is hydrated and auth is ready
+    if (!mounted || !isReady) {
+        return (
+            <header className="sticky top-0 z-50 border-b border-outline-variant/80 bg-surface/95 backdrop-blur supports-backdrop-filter:bg-surface/80">
+                <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
+                    <Link
+                        href="/"
+                        className="text-lg font-semibold tracking-tight text-on-surface transition-colors flex items-center gap-2"
+                        aria-label="Planet Books home"
+                    >
+                        <Image src="/logo.png" alt="Planet Books logo" width={40} height={40} className="h-10" style={{width: "auto"}} />
+                        <div>
+                            Planet
+                            <span className="text-primary">Books</span>
+                        </div>
+                    </Link>
+                    <div />
+                </div>
+            </header>
+        )
+    }
 
     return (
         <header key={pathname}
@@ -43,7 +66,7 @@ export default function Navbar() {
                     className="text-lg font-semibold tracking-tight text-on-surface transition-colors flex items-center gap-2"
                     aria-label="Planet Books home"
                 >
-                    <Image src="/logo.png" alt="Planet Books logo" width={40} height={40} className="h-10 w-auto" />
+                    <Image src="/logo.png" alt="Planet Books logo" width={40} height={40} className="h-10" style={{width: "auto"}} />
                     <div>
                         Planet
                         <span className="text-primary">Books</span>

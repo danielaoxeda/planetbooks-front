@@ -8,23 +8,47 @@ export default function LoginForm() {
     const [loading, setLoading] = useState(false)
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+
         e.preventDefault()
+
         setLoading(true)
+
         const formData = new FormData(e.currentTarget)
+
         const credentials = {
-            email: String(formData.get('email') ?? ''),
-            password: String(formData.get('password') ?? ''),
+
+            email: String(formData.get("email")),
+            password: String(formData.get("password"))
+
         }
 
         try {
-            const user = await authService.login(credentials)
-            login(user)
-            window.location.href = '/account'
-        } catch (err: any) {
-            alert(err.message)
+
+            const response = await authService.login(credentials)
+
+            login(response.user, response.token)
+
+            if (response.user.role === "ADMIN") {
+
+                window.location.href = "/admin/dashboard"
+
+            } else {
+
+                window.location.href = "/account"
+
+            }
+
+        } catch (err: unknown) {
+
+            const message = err instanceof Error ? err.message : String(err)
+            alert(message)
+
         } finally {
+
             setLoading(false)
+
         }
+
     }
 
     return (
