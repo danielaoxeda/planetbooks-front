@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Product } from "@/types/product";
+import { getProducts } from "@/services/productService";
 
 export function useProducts() {
     const [books, setBooks] = useState<Product[]>([]);
@@ -9,21 +10,7 @@ export function useProducts() {
 
     const loadProducts = async () => {
         try {
-            const token = localStorage.getItem("token");
-
-            const res = await fetch(
-                "https://planetbook.solidwebs.com/api/v1/products?page=0&size=100",
-                {
-                    headers: {
-                        "Content-Type": "application/json",
-                        ...(token && {
-                            Authorization: `Bearer ${token}`,
-                        }),
-                    },
-                }
-            );
-
-            const data = await res.json();
+            const data = await getProducts();
 
             setBooks(
                 Array.isArray(data)
@@ -32,7 +19,7 @@ export function useProducts() {
             );
 
         } catch (error) {
-            console.error(error);
+            console.error("Error loading products:", error);
         } finally {
             setLoading(false);
         }

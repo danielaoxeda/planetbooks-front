@@ -99,7 +99,7 @@ export default function AddBookModal({
                 formData.tag,
 
                 categories: [
-                    formData.tag
+                    formData.level
                 ],
 
                 level:

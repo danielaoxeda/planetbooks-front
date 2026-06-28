@@ -11,6 +11,7 @@ import EditBookModal from "@/components/admin/books/EditBookModal";
 
 import {Product} from "@/types/product";
 import {useProducts} from "@/hooks/useProducts";
+import {createProduct, deleteProduct, updateProduct} from "@/services/productService";
 
 export default function BooksPage() {
 
@@ -48,44 +49,18 @@ export default function BooksPage() {
                         search.toLowerCase()
                     );
 
-            const matchesCategory =
-                category ===
-                "All Categories" ||
+            const matchesCategory = category === "All Categories" || book.categories.includes(category);
 
-                book.categories.includes(
-                    category
-                );
-
-            return (
-                matchesSearch &&
-                matchesCategory
+            return (matchesSearch && matchesCategory
             );
         });
 
     const handleAddBook = async (
         newBook: Product
     ) => {
-
         try {
 
-            const token =
-                localStorage.getItem("token");
-
-            await fetch(
-                "https://planetbook.solidwebs.com/api/v1/products",
-                {
-                    method: "POST",
-                    headers: {
-                        "Content-Type":
-                            "application/json",
-                        Authorization:
-                            `Bearer ${token}`,
-                    },
-                    body: JSON.stringify(
-                        newBook
-                    ),
-                }
-            );
+            await createProduct(newBook);
 
             setModalOpen(false);
 
@@ -99,26 +74,11 @@ export default function BooksPage() {
     const handleUpdateBook = async (
         updatedBook: Product
     ) => {
-
         try {
 
-            const token =
-                localStorage.getItem("token");
-
-            await fetch(
-                `https://planetbook.solidwebs.com/api/v1/products/${updatedBook.id}`,
-                {
-                    method: "PUT",
-                    headers: {
-                        "Content-Type":
-                            "application/json",
-                        Authorization:
-                            `Bearer ${token}`,
-                    },
-                    body: JSON.stringify(
-                        updatedBook
-                    ),
-                }
+            await updateProduct(
+                updatedBook.id,
+                updatedBook
             );
 
             setEditModalOpen(false);
@@ -132,23 +92,9 @@ export default function BooksPage() {
     const handleDelete = async (
         book: Product
     ) => {
-
         try {
 
-            const token =
-                localStorage.getItem("token");
-
-            await fetch(
-                `https://planetbook.solidwebs.com/api/v1/products/${book.id}`,
-                {
-                    method: "DELETE",
-                    headers: {
-                        Authorization:
-                            `Bearer ${token}`,
-                    },
-                }
-            );
-
+            await deleteProduct(book.id);
             await refreshProducts();
 
         } catch (error) {
@@ -159,9 +105,7 @@ export default function BooksPage() {
     const handleEdit = (
         book: Product
     ) => {
-
         setSelectedBook(book);
-
         setEditModalOpen(true);
     };
 

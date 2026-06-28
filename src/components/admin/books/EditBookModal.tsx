@@ -1,9 +1,7 @@
 "use client";
 
 import {useEffect, useState} from "react";
-
 import {Upload} from "lucide-react";
-
 import {Product} from "@/types/product";
 
 interface Props {
@@ -12,17 +10,9 @@ interface Props {
     book: Product | null;
     onSave: (updatedBook: Product) => void;
 }
+export default function EditBookModal({open, onClose, book, onSave,}: Props) {
 
-export default function EditBookModal({
-                                          open,
-                                          onClose,
-                                          book,
-                                          onSave,
-                                      }: Props) {
-
-    const [preview, setPreview] =
-        useState("");
-
+    const [preview, setPreview] = useState("");
     const [formData, setFormData] =
         useState({
             title: "",
@@ -32,50 +22,36 @@ export default function EditBookModal({
             pages: "",
             format: "",
             publisher: "",
-            language: "English",
+            language: "",
             image: "",
             price: "",
         });
-
     useEffect(() => {
-
         if (book) {
-
             setFormData({
-                title: book.title,
-                description:
-                book.description,
-                tag: book.tag,
-                level: book.level,
-                pages: book.pages,
-                format: book.format,
-                publisher:
-                book.publisher,
-                language:
-                book.language,
-                image: book.image,
-                price: String(
-                    book.items?.[0]
-                        ?.price || 0
-                ),
+                title: book.title ?? "",
+                description: book.description ?? "",
+                tag: book.tag ?? "",
+                level: book.level ?? "",
+                pages: book.pages ?? "",
+                format: book.format ?? "",
+                publisher: book.publisher ?? "",
+                language: book.language ?? "",
+                image: book.image ?? "",
+                price: String(book.items?.[0]?.price ?? 0),
             });
-
-            setPreview(book.image);
+            setPreview(book.image ?? "");
         }
 
     }, [book]);
 
-    const handleChange = (
-        field: string,
-        value: string
+    const handleChange = (field: string, value: string
     ) => {
-
         setFormData((prev) => ({
             ...prev,
             [field]: value,
         }));
     };
-
     const handleImageUpload = (
         e: React.ChangeEvent<HTMLInputElement>
     ) => {
@@ -102,63 +78,39 @@ export default function EditBookModal({
 
         const updatedBook: Product = {
             ...book,
-
-            title:
-            formData.title,
-
-            description:
-            formData.description,
-
-            tag:
-            formData.tag,
-
-            categories: [
-                formData.tag,
-            ],
-
-            level:
-            formData.level,
-
-            pages:
-            formData.pages,
-
-            format:
-            formData.format,
-
-            publisher:
-            formData.publisher,
-
-            language:
-            formData.language,
-
-            image:
-            formData.image,
-
-            items: [
-                {
-                    ...book.items[0],
-                    price: Number(formData.price),
-                    image: formData.image,
-                },
-            ],
-
+            title: formData.title,
+            description: formData.description,
+            tag: formData.tag,
+            categories: [formData.tag,],
+            level: formData.level,
+            pages: formData.pages,
+            format: formData.format,
+            publisher: formData.publisher,
+            language: formData.language,
+            image: formData.image,
+            items: book.items?.length ? [
+                    {
+                        ...book.items[0],
+                        price: Number(formData.price),
+                        image: formData.image,
+                    },
+                ]
+                : [],
         };
 
         onSave(updatedBook);
-
         onClose();
     };
 
     if (!open || !book)
         return null;
+    console.log("book", book);
+    console.log("formData", formData);
 
     return (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
-
             <div className="bg-white rounded-3xl w-full max-w-3xl max-h-[90vh] overflow-y-auto p-8">
-
                 <div className="flex items-center justify-between mb-6">
-
                     <div>
                         <h2 className="text-2xl font-bold">
                             Edit Book
@@ -185,19 +137,10 @@ export default function EditBookModal({
                             Book Title
                         </label>
 
-                        <input
-                            type="text"
-                            value={
-                                formData.title
-                            }
+                        <input type="text" value={formData.title || ""}
                             onChange={(e) =>
-                                handleChange(
-                                    "title",
-                                    e.target.value
-                                )
-                            }
-                            className="w-full border border-gray-200 rounded-xl px-4 py-3"
-                        />
+                                handleChange("title", e.target.value)
+                            } className="w-full border border-gray-200 rounded-xl px-4 py-3"/>
                     </div>
 
                     <div>
@@ -206,17 +149,9 @@ export default function EditBookModal({
                         </label>
 
                         <select
-                            value={
-                                formData.tag
-                            }
-                            onChange={(e) =>
-                                handleChange(
-                                    "tag",
-                                    e.target.value
-                                )
-                            }
-                            className="w-full border border-gray-200 rounded-xl px-4 py-3"
-                        >
+                            value={formData.tag || ""}
+                            onChange={(e) => handleChange("tag", e.target.value)
+                            } className="w-full border border-gray-200 rounded-xl px-4 py-3">
                             <option value="Practice Tests">
                                 Practice Tests
                             </option>
@@ -253,7 +188,7 @@ export default function EditBookModal({
 
                         <select
                             value={
-                                formData.level
+                                formData.level || ""
                             }
                             onChange={(e) =>
                                 handleChange(
@@ -300,7 +235,7 @@ export default function EditBookModal({
 
                         <select
                             value={
-                                formData.publisher
+                                formData.publisher || ""
                             }
                             onChange={(e) =>
                                 handleChange(
@@ -339,17 +274,10 @@ export default function EditBookModal({
 
                         <input
                             type="text"
-                            value={
-                                formData.format
-                            }
+                            value={formData.format || ""}
                             onChange={(e) =>
-                                handleChange(
-                                    "format",
-                                    e.target.value
-                                )
-                            }
-                            className="w-full border border-gray-200 rounded-xl px-4 py-3"
-                        />
+                                handleChange("format", e.target.value)}
+                            className="w-full border border-gray-200 rounded-xl px-4 py-3"/>
                     </div>
 
                     <div>
@@ -359,17 +287,9 @@ export default function EditBookModal({
 
                         <input
                             type="number"
-                            value={
-                                formData.price
-                            }
-                            onChange={(e) =>
-                                handleChange(
-                                    "price",
-                                    e.target.value
-                                )
-                            }
-                            className="w-full border border-gray-200 rounded-xl px-4 py-3"
-                        />
+                            value={formData.price || ""}
+                            onChange={(e) => handleChange("price", e.target.value)
+                            } className="w-full border border-gray-200 rounded-xl px-4 py-3"/>
                     </div>
 
                     <div className="md:col-span-2">
@@ -405,7 +325,6 @@ export default function EditBookModal({
 
                     {preview && (
                         <div className="md:col-span-2 flex justify-center">
-
                             <img
                                 src={preview}
                                 alt="Preview"
@@ -426,10 +345,7 @@ export default function EditBookModal({
                         Cancel
                     </button>
 
-                    <button
-                        onClick={
-                            handleSubmit
-                        }
+                    <button onClick={handleSubmit}
                         className="px-5 py-3 rounded-xl bg-[#006b11] text-white hover:bg-[#00520d]"
                     >
                         Save Changes
