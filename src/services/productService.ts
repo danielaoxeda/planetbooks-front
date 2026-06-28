@@ -12,7 +12,7 @@ export async function getProducts() {
 export async function getProductById(id: number) {
     try {
         const response =
-            await api.get(`/products/${id}`);
+            await api.get(`/v1/products/${id}`);
         return response.data;
     } catch (error) {
         const axiosError = error as AxiosError;
@@ -27,7 +27,7 @@ export async function createProduct(product: any) {
 
     const response =
         await api.post(
-            "/products",
+            "/v1/products",
             product
         );
 

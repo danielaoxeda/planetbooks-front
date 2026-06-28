@@ -3,14 +3,14 @@ import api from "@/lib/axios";
 export async function getOrders() {
 
     const response =
-        await api.get("/orders");
+        await api.get("/v1/orders");
 
     return response.data;
 }
 export async function getOrdersSummary() {
 
     const response =
-        await api.get("/orders/summary");
+        await api.get("/v1/orders/summary");
 
     return response.data;
 }
