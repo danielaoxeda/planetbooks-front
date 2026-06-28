@@ -123,27 +123,15 @@ export default function AddBookModal({
                 items: [
                     {
                         key: "pdf",
-
                         title: "PDF",
-
-                        price:
-                            Number(
-                                formData.price
-                            ),
-
+                        price: Number(formData.price),
                         stock: 100,
-
                         isDefault: true
                     }
                 ]
             };
 
-            const savedBook =
-                await createProduct(
-                    payload
-                );
-
-            onSave(savedBook);
+            onSave(payload as any);
 
             resetForm();
 
