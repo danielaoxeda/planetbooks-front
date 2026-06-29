@@ -272,6 +272,240 @@ function AccountProfileForm({
         { id: 'privacy', label: 'Privacy', icon: ShieldCheck },
     ] as const
 
+    return (
+        <section className="relative w-full overflow-hidden bg-[radial-gradient(circle_at_top_left,rgba(0,107,17,0.14),transparent_30%),radial-gradient(circle_at_top_right,rgba(0,136,24,0.12),transparent_28%),linear-gradient(180deg,#f5fcee_0%,#edf5e4_55%,#f8fafc_100%)]">
+            <div className="absolute inset-x-0 top-0 h-56 bg-[linear-gradient(180deg,rgba(0,107,17,0.14),transparent)]" />
 
-}
+            <div className="relative mx-auto flex w-full max-w-7xl flex-col gap-6 px-4 py-6 sm:px-6 lg:px-8 lg:py-10">
+                {/* Header Card */}
+                <div className="overflow-hidden rounded-[28px] border border-white/60 bg-[#006b11] shadow-[0_20px_80px_rgba(0,107,17,0.22)]">
+                    <div className="grid min-h-60 gap-8 p-6 text-white md:grid-cols-[auto_1fr] md:items-end md:p-8 lg:p-10">
+                        <div className="flex items-center gap-5">
+                            <div className="relative">
+                                <div className="flex h-28 w-28 items-center justify-center rounded-full border border-white/25 bg-white/10 text-3xl font-bold tracking-tight text-white shadow-2xl backdrop-blur">
+                                    {initials}
+                                </div>
+                                <button
+                                    className="absolute -bottom-1 -right-1 flex h-8 w-8 items-center justify-center rounded-full bg-white text-primary shadow-lg hover:bg-gray-100 transition-colors"
+                                    title="Change avatar"
+                                >
+                                    <User size={14} />
+                                </button>
+                            </div>
+
+                            <div className="max-w-xl space-y-2">
+                                <p className="text-xs font-semibold uppercase tracking-[0.28em] text-white/75">Account overview</p>
+                                <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">{displayName}</h1>
+                                <p className="text-sm text-white/85 sm:text-base">{currentUser.email}</p>
+                                <div className="flex flex-wrap gap-2 pt-2">
+                                    <span className="inline-flex items-center gap-2 rounded-full bg-white/12 px-3 py-1 text-xs font-semibold text-white ring-1 ring-inset ring-white/15">
+                                        <Sparkles size={14} />
+                                        {roleLabel}
+                                    </span>
+                                    <span className="inline-flex items-center gap-2 rounded-full bg-white px-3 py-1 text-xs font-semibold text-primary shadow-sm">
+                                        <ShieldCheck size={14} />
+                                        Secure access
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="grid gap-3 md:w-72 md:justify-self-end">
+                            <Link
+                                href="/catalog"
+                                className="inline-flex items-center justify-center gap-2 rounded-2xl bg-white px-4 py-3 text-sm font-semibold text-primary shadow-sm transition-transform hover:-translate-y-0.5"
+                            >
+                                <BookOpen size={16} />
+                                Explore catalog
+                            </Link>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="grid gap-6 lg:grid-cols-[280px_1fr] lg:items-start">
+                    {/* Sidebar Navigation */}
+                    <aside className="rounded-[28px] border border-white/70 bg-white/80 p-5 shadow-[0_12px_40px_rgba(15,23,42,0.08)] backdrop-blur sm:p-6 lg:sticky lg:top-24">
+                        <div className="rounded-2xl bg-surface-container-low px-4 py-4">
+                            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-primary">Settings</p>
+                            <p className="mt-1 text-sm text-on-surface-variant">Manage your account.</p>
+                        </div>
+
+                        <nav className="mt-4 space-y-2">
+                            {navItems.map((item) => (
+                                <button
+                                    key={item.id}
+                                    type="button"
+                                    onClick={() => setViewMode(item.id)}
+                                    className={`w-full inline-flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-semibold transition-colors ${
+                                        viewMode === item.id
+                                            ? 'bg-primary text-white shadow-sm'
+                                            : 'border border-outline-variant/70 bg-surface-container-low text-on-surface-variant hover:bg-surface-container-high'
+                                    }`}
+                                >
+                                    <item.icon size={18} />
+                                    {item.label}
+                                </button>
+                            ))}
+                        </nav>
+
+                        <button
+                            type="button"
+                            onClick={onLogout}
+                            className="mt-6 w-full inline-flex items-center justify-center gap-2 rounded-2xl border border-error/20 bg-error/5 px-4 py-3 text-sm font-semibold text-error transition-colors hover:bg-error/10"
+                        >
+                            <LogOut size={16} />
+                            Sign out
+                        </button>
+                    </aside>
+
+                    {/* Content Area */}
+                    <div className="grid gap-6">
+                        {/* Profile Section */}
+                        {viewMode === 'profile' && (
+                            <section className="rounded-[28px] border border-white/70 bg-white/80 p-6 shadow-[0_12px_40px_rgba(15,23,42,0.08)] backdrop-blur sm:p-8">
+                                <div className="mb-6">
+                                    <p className="text-xs font-semibold uppercase tracking-[0.24em] text-primary">Personal Information</p>
+                                    <h2 className="mt-2 text-2xl font-bold tracking-tight text-on-surface">Edit your profile</h2>
+                                    <p className="mt-2 text-sm text-on-surface-variant">
+                                        Update your personal information and how others see you.
+                                    </p>
+                                </div>
+
+                                <div className="grid gap-6 md:grid-cols-2">
+                                    <FormInput label="Full Name" error={profileForm.errors.name}>
+                                        <input
+                                            type="text"
+                                            {...profileForm.getFieldProps('name')}
+                                            className="rounded-2xl border border-outline-variant/60 bg-surface-container-lowest px-4 py-3 text-sm text-on-surface outline-none transition-colors placeholder:text-on-surface-variant/60 focus:border-primary disabled:bg-surface-container-low disabled:text-on-surface-variant disabled:cursor-not-allowed"
+                                        />
+                                    </FormInput>
+
+                                    <FormInput label="Email Address" error={profileForm.errors.email}>
+                                        <input
+                                            type="email"
+                                            {...profileForm.getFieldProps('email')}
+                                            className="rounded-2xl border border-outline-variant/60 bg-surface-container-lowest px-4 py-3 text-sm text-on-surface outline-none transition-colors placeholder:text-on-surface-variant/60 focus:border-primary"
+                                        />
+                                    </FormInput>
+
+                                    <FormInput label="Phone Number" hint="Optional" error={profileForm.errors.phone}>
+                                        <input
+                                            type="tel"
+                                            {...profileForm.getFieldProps('phone')}
+                                            placeholder="+1 (555) 000-0000"
+                                            className="rounded-2xl border border-outline-variant/60 bg-surface-container-lowest px-4 py-3 text-sm text-on-surface outline-none transition-colors placeholder:text-on-surface-variant/60 focus:border-primary"
+                                        />
+                                    </FormInput>
+
+                                    <FormInput label="Bio" hint="Optional" error={profileForm.errors.bio}>
+                                        <textarea
+                                            {...profileForm.getFieldProps('bio')}
+                                            placeholder="Tell us about yourself..."
+                                            rows={3}
+                                            className="rounded-2xl border border-outline-variant/60 bg-surface-container-lowest px-4 py-3 text-sm text-on-surface outline-none transition-colors placeholder:text-on-surface-variant/60 focus:border-primary resize-none"
+                                        />
+                                    </FormInput>
+                                </div>
+
+                                <div className="mt-6 flex justify-end">
+                                    <button
+                                        type="button"
+                                        onClick={handleSaveProfile}
+                                        disabled={isSaving}
+                                        className="rounded-2xl bg-primary px-6 py-3 text-sm font-semibold text-white shadow-sm transition-transform hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-70"
+                                    >
+                                        {isSaving ? 'Saving...' : 'Save Changes'}
+                                    </button>
+                                </div>
+                            </section>
+                        )}
+
+                        {/* Password Section */}
+                        {viewMode === 'password' && (
+                            <section className="rounded-[28px] border border-white/70 bg-white/80 p-6 shadow-[0_12px_40px_rgba(15,23,42,0.08)] backdrop-blur sm:p-8">
+                                <div className="mb-6">
+                                    <p className="text-xs font-semibold uppercase tracking-[0.24em] text-primary">Security</p>
+                                    <h2 className="mt-2 text-2xl font-bold tracking-tight text-on-surface">Change Password</h2>
+                                    <p className="mt-2 text-sm text-on-surface-variant">
+                                        Ensure your account stays secure by using a strong password.
+                                    </p>
+                                </div>
+
+                                <div className="grid gap-6 max-w-lg">
+                                    <FormInput label="Current Password" error={passwordForm.errors.currentPassword}>
+                                        <div className="relative">
+                                            <input
+                                                type={showCurrentPassword ? 'text' : 'password'}
+                                                {...passwordForm.getFieldProps('currentPassword')}
+                                                placeholder="Enter current password"
+                                                className="w-full rounded-2xl border border-outline-variant/60 bg-surface-container-lowest px-4 py-3 pr-10 text-sm text-on-surface outline-none transition-colors placeholder:text-on-surface-variant/60 focus:border-primary"
+                                            />
+                                            <button
+                                                type="button"
+                                                onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+                                                className="absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant hover:text-on-surface"
+                                            >
+                                                {showCurrentPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                                            </button>
+                                        </div>
+                                    </FormInput>
+
+                                    <FormInput
+                                        label="New Password"
+                                        hint="At least 6 characters"
+                                        error={passwordForm.errors.newPassword}
+                                    >
+                                        <div className="relative">
+                                            <input
+                                                type={showNewPassword ? 'text' : 'password'}
+                                                {...passwordForm.getFieldProps('newPassword')}
+                                                placeholder="Enter new password"
+                                                className="w-full rounded-2xl border border-outline-variant/60 bg-surface-container-lowest px-4 py-3 pr-10 text-sm text-on-surface outline-none transition-colors placeholder:text-on-surface-variant/60 focus:border-primary"
+                                            />
+                                            <button
+                                                type="button"
+                                                onClick={() => setShowNewPassword(!showNewPassword)}
+                                                className="absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant hover:text-on-surface"
+                                            >
+                                                {showNewPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                                            </button>
+                                        </div>
+                                    </FormInput>
+
+                                    <FormInput label="Confirm New Password" error={passwordForm.errors.confirmPassword}>
+                                        <div className="relative">
+                                            <input
+                                                type={showConfirmPassword ? 'text' : 'password'}
+                                                {...passwordForm.getFieldProps('confirmPassword')}
+                                                placeholder="Confirm new password"
+                                                className="w-full rounded-2xl border border-outline-variant/60 bg-surface-container-lowest px-4 py-3 pr-10 text-sm text-on-surface outline-none transition-colors placeholder:text-on-surface-variant/60 focus:border-primary"
+                                            />
+                                            <button
+                                                type="button"
+                                                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                                                className="absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant hover:text-on-surface"
+                                            >
+                                                {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                                            </button>
+                                        </div>
+                                    </FormInput>
+                                </div>
+
+                                <div className="mt-6 flex justify-end">
+                                    <button
+                                        type="button"
+                                        onClick={handleSavePassword}
+                                        disabled={isSaving}
+                                        className="rounded-2xl bg-primary px-6 py-3 text-sm font-semibold text-white shadow-sm transition-transform hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-70"
+                                    >
+                                        {isSaving ? 'Updating...' : 'Update Password'}
+                                    </button>
+                                </div>
+                            </section>
+                        )}
+                    </div>
+                </div>
+            </div>
+        </section>
+    )
 }
