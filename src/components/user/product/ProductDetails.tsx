@@ -46,8 +46,8 @@ export default function ProductDetails({product}: Props) {
                                     <div className="text-on-background font-semibold">{product.publisher ?? "—"}</div>
                                 </div>
                                 <div>
-                                    <div className="font-label-caps text-[10px]">Pages</div>
-                                    <div className="text-on-background font-semibold">{product.pages ?? "—"}</div>
+                                    <div className="font-label-caps text-[10px]">Year</div>
+                                    <div className="text-on-background font-semibold">{product.year ?? "—"}</div>
                                 </div>
                                 <div>
                                     <div className="font-label-caps text-[10px]">Format</div>

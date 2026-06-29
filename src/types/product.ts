@@ -10,6 +10,7 @@ export interface ProductItem {
     format: string;
     stock: number;
     isDefault: boolean;
+    year:string;
 }
 
 export interface Product {
@@ -21,7 +22,7 @@ export interface Product {
     level: string;
     image: string;
     gallery: string[];
-    pages: string;
+    year: string;
     format: string;
     publisher: string;
     language: string;
@@ -35,7 +36,7 @@ export interface CreateProductDto {
     categories: string[];
     level: string;
     image: string;
-    pages: number;
+    year: string;
     format: string;
     publisher: string;
     language: string;
