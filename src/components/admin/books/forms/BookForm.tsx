@@ -165,28 +165,28 @@ export default function BookForm({
                 )}
             </div>
 
-            {/* YEAR */}
+            {/* Pages */}
 
             <div>
                 <label className="block text-sm font-medium mb-2">
-                    Year
+                    Pages
                 </label>
 
                 <input
                     type="number"
-                    value={formData.year}
+                    value={formData.pages}
                     onChange={(e) =>
                         onChange(
-                            "year",
+                            "pages",
                             e.target.value
                         )
                     }
                     className="w-full border border-gray-200 rounded-xl px-4 py-3"
                 />
 
-                {errors.year && (
+                {errors.pages && (
                     <p className="text-red-500 text-sm mt-1">
-                        {errors.year}
+                        {errors.pages}
                     </p>
                 )}
             </div>

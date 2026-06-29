@@ -22,7 +22,7 @@ export interface Product {
     level: string;
     image: string;
     gallery: string[];
-    year: string;
+    pages: string;
     format: string;
     publisher: string;
     language: string;
@@ -36,7 +36,7 @@ export interface CreateProductDto {
     categories: string[];
     level: string;
     image: string;
-    year: string;
+    pages: string;
     format: string;
     publisher: string;
     language: string;

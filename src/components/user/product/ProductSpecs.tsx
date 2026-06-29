@@ -27,8 +27,8 @@ export default function ProductSpecs({product}: Props) {
                     <div className="font-body-md font-semibold">{product.format ?? "—"}</div>
                 </div>
                 <div className="bg-surface-container-lowest border border-outline-variant p-4 rounded-lg shadow-sm">
-                    <div className="font-label-caps text-on-surface-variant mb-1">Year</div>
-                    <div className="font-body-md font-semibold">{product.year ?? "—"}</div>
+                    <div className="font-label-caps text-on-surface-variant mb-1">Pages</div>
+                    <div className="font-body-md font-semibold">{product.pages ?? "—"}</div>
                 </div>
                 <div className="bg-surface-container-lowest border border-outline-variant p-4 rounded-lg shadow-sm">
                     <div className="font-label-caps text-on-surface-variant mb-1">Publisher</div>

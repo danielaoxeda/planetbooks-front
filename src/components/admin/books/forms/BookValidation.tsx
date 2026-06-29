@@ -3,7 +3,7 @@ export interface BookFormData {
     description: string;
     tag: string;
     level: string;
-    year: string;
+    pages: string;
     format: string;
     publisher: string;
     language: string;
@@ -32,10 +32,8 @@ export function validateBookForm(
         errors.level = "Level is required";
     }
 
-    if (!formData.year.trim()) {
-        errors.year = "Year is required";
-    } else if (!/^\d{4}$/.test(formData.year)) {
-        errors.year = "Year must contain 4 digits";
+    if (!formData.pages.trim()) {
+        errors.pages = "Pages is required";
     }
 
     if (!formData.format.trim()) {
