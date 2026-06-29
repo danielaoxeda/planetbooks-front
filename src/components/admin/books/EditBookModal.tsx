@@ -11,7 +11,6 @@ interface Props {
     onSave: (updatedBook: Product) => void;
 }
 export default function EditBookModal({open, onClose, book, onSave,}: Props) {
-
     const [preview, setPreview] = useState("");
     const [formData, setFormData] =
         useState({
@@ -19,7 +18,7 @@ export default function EditBookModal({open, onClose, book, onSave,}: Props) {
             description: "",
             tag: "",
             level: "",
-            pages: "",
+            year: "",
             format: "",
             publisher: "",
             language: "",
@@ -33,7 +32,7 @@ export default function EditBookModal({open, onClose, book, onSave,}: Props) {
                 description: book.description ?? "",
                 tag: book.tag ?? "",
                 level: book.level ?? "",
-                pages: book.pages ?? "",
+                year: book.year ?? "",
                 format: book.format ?? "",
                 publisher: book.publisher ?? "",
                 language: book.language ?? "",
@@ -42,34 +41,21 @@ export default function EditBookModal({open, onClose, book, onSave,}: Props) {
             });
             setPreview(book.image ?? "");
         }
-
-    }, [book]);
+        }, [book]);
 
     const handleChange = (field: string, value: string
-    ) => {
-        setFormData((prev) => ({
-            ...prev,
-            [field]: value,
-        }));
+    ) => {setFormData((prev) => ({...prev, [field]: value,}));
     };
     const handleImageUpload = (
         e: React.ChangeEvent<HTMLInputElement>
     ) => {
-
-        const file =
-            e.target.files?.[0];
+        const file = e.target.files?.[0];
 
         if (!file) return;
 
-        const imageUrl =
-            URL.createObjectURL(file);
+        const imageUrl = URL.createObjectURL(file);setPreview(imageUrl);
 
-        setPreview(imageUrl);
-
-        setFormData((prev) => ({
-            ...prev,
-            image: imageUrl,
-        }));
+        setFormData((prev) => ({...prev, image: imageUrl,}));
     };
 
     const handleSubmit = () => {
@@ -83,7 +69,7 @@ export default function EditBookModal({open, onClose, book, onSave,}: Props) {
             tag: formData.tag,
             categories: [formData.tag,],
             level: formData.level,
-            pages: formData.pages,
+            year: formData.year,
             format: formData.format,
             publisher: formData.publisher,
             language: formData.language,
@@ -278,6 +264,38 @@ export default function EditBookModal({open, onClose, book, onSave,}: Props) {
                             onChange={(e) =>
                                 handleChange("format", e.target.value)}
                             className="w-full border border-gray-200 rounded-xl px-4 py-3"/>
+                    </div>
+
+                    <div>
+                        <label className="block text-sm font-medium mb-2">
+                            Year
+                        </label>
+
+                        <input
+                            type="number"
+                            min="2000"
+                            value={formData.year}
+                            onChange={(e) => handleChange("year", e.target.value)
+                            } className="w-full border border-gray-200 rounded-xl px-4 py-3"/>
+                    </div>
+
+                    <div>
+                        <label className="block text-sm font-medium mb-2">
+                            Language
+                        </label>
+
+                        <input
+                            type="text"
+                            placeholder="English, Spanish, French..."
+                            value={formData.language}
+                            onChange={(e) =>
+                                handleChange(
+                                    "language",
+                                    e.target.value
+                                )
+                            }
+                            className="w-full border border-gray-200 rounded-xl px-4 py-3"
+                        />
                     </div>
 
                     <div>
