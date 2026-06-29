@@ -8,15 +8,17 @@ import UserTable from "@/components/admin/user/UserTable";
 import UserPagination from "@/components/admin/user/UserPagination";
 import UserFormModal from "@/components/admin/user/UserFormModal";
 import UserDeleteModal from "@/components/admin/user/UserDeleteModal";
+
 import FooterCards from "@/components/admin/footer-cards/FooterCards";
 
-import { User } from "@/types/user";
+import { User, UpdateUserRequest } from "@/types/user";
+import { RegisterRequest } from "@/types/auth";
+
 import { userService } from "@/services/userService";
 
 export default function UserPage() {
 
     const [users, setUsers] = useState<User[]>([]);
-    const [loading, setLoading] = useState(true);
 
     const [search, setSearch] = useState("");
 
@@ -26,11 +28,14 @@ export default function UserPage() {
 
     const [deleteOpen, setDeleteOpen] = useState(false);
 
-    const [selectedUser, setSelectedUser] = useState<User | null>(null);
+    const [selectedUser, setSelectedUser] =
+        useState<User | null>(null);
 
     const [formData, setFormData] = useState({
         name: "",
-        email: ""
+        email: "",
+        role: "USER" as "ADMIN" | "USER",
+        enabled: true,
     });
 
     useEffect(() => {
@@ -40,8 +45,6 @@ export default function UserPage() {
     async function loadUsers() {
 
         try {
-
-            setLoading(true);
 
             const data = await userService.getAll();
 
@@ -53,94 +56,83 @@ export default function UserPage() {
 
             alert("Error loading users.");
 
-        } finally {
-
-            setLoading(false);
-
         }
 
     }
 
     const handleChange = (
         field: string,
-        value: string
+        value: string | boolean
     ) => {
 
-        setFormData(prev => ({
+        setFormData((prev) => ({
             ...prev,
-            [field]: value
+            [field]: value,
         }));
 
     };
 
-    const openCreateModal = () => {
 
-        setSelectedUser(null);
-
-        setFormData({
-            name: "",
-            email: ""
-        });
-
-        setFormOpen(true);
-
-    };
-
-    const openEditModal = (user: User) => {
+    const openEditModal = (
+        user: User
+    ) => {
 
         setSelectedUser(user);
 
         setFormData({
             name: user.name,
-            email: user.email
+            email: user.email,
+            role: user.role,
+            enabled: user.enabled,
         });
 
         setFormOpen(true);
 
     };
 
-    async function handleSave() {
+    const handleSave = async () => {
 
         if (!selectedUser) return;
 
         try {
 
+            const data: UpdateUserRequest = {
+
+                name: formData.name,
+                email: formData.email,
+
+            };
+
             await userService.update(
                 selectedUser.id,
-                formData
+                data
             );
 
-            alert("User updated successfully.");
+            await loadUsers();
 
             setFormOpen(false);
-
-            loadUsers();
 
         } catch (error) {
 
             console.error(error);
 
-            alert("Error updating user.");
+            alert("Error saving user.");
 
         }
 
-    }
+    };
 
-    async function handleDelete() {
+    const handleDelete = async () => {
 
         if (!selectedUser) return;
 
         try {
 
-            await userService.delete(
-                selectedUser.id
-            );
+            await userService.delete(selectedUser.id);
 
-            alert("User deleted successfully.");
+            await loadUsers();
 
             setDeleteOpen(false);
-
-            loadUsers();
 
         } catch (error) {
 
@@ -150,57 +142,39 @@ export default function UserPage() {
 
         }
 
-    }
+    };
 
-    const filteredUsers = users.filter(user =>
-        user.name.toLowerCase().includes(
-            search.toLowerCase()
-        )
+    const filteredUsers = users.filter((user) =>
+        user.name
+            .toLowerCase()
+            .includes(search.toLowerCase())
     );
 
-    if (loading) {
-
-        return (
-
-            <div className="flex justify-center items-center h-screen">
-
-                <h2 className="text-xl font-semibold">
-                    Loading users...
-                </h2>
-
-            </div>
-
-        );
-
-    }
-
     return (
-
         <div className="w-full max-w-full p-3 sm:p-4 md:p-6 lg:p-8">
 
-            <div className="space-y-6">
+            <div className="w-full max-w-full space-y-4 sm:space-y-6">
 
                 <UserFilters
                     search={search}
                     onSearchChange={setSearch}
-                    onCreateUser={openCreateModal}
                 />
 
                 <UserStats
                     totalUsers={users.length}
                     activeUsers={
                         users.filter(
-                            u => u.enabled
+                            (u) => u.enabled
                         ).length
                     }
                     inactiveUsers={
                         users.filter(
-                            u => !u.enabled
+                            (u) => !u.enabled
                         ).length
                     }
                     admins={
                         users.filter(
-                            u => u.role === "ADMIN"
+                            (u) => u.role === "ADMIN"
                         ).length
                     }
                 />
@@ -244,7 +218,6 @@ export default function UserPage() {
             />
 
         </div>
-
     );
 
 }

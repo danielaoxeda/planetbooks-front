@@ -5,18 +5,21 @@ import { User } from "@/types/user";
 
 interface UserFormModalProps {
     open: boolean;
-    user?: User | null;
+
+    user: User | null;
 
     formData: {
         name: string;
         email: string;
+        role: "ADMIN" | "USER";
+        enabled: boolean;
     };
 
     onClose: () => void;
 
     onChange: (
         field: string,
-        value: string
+        value: string | boolean
     ) => void;
 
     onSubmit: () => void;
@@ -24,7 +27,6 @@ interface UserFormModalProps {
 
 export default function UserFormModal({
                                           open,
-                                          user,
                                           formData,
                                           onClose,
                                           onChange,
@@ -34,27 +36,25 @@ export default function UserFormModal({
     if (!open) return null;
 
     return (
+        <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-3 sm:p-4 md:p-6 overflow-y-auto">
+            <div className="bg-white w-full max-w-lg rounded-lg sm:rounded-2xl shadow-xl my-4">
 
-        <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4">
+                <div className="flex items-center justify-between p-3 sm:p-4 md:p-6 border-b border-[#becab7]">
 
-            <div className="bg-white w-full max-w-lg rounded-2xl shadow-xl">
-
-                <div className="flex items-center justify-between p-6 border-b border-[#becab7]">
-
-                    <h2 className="text-xl font-bold">
-                        {user ? "Edit User" : "Create User"}
+                    <h2 className="text-base sm:text-lg md:text-xl font-bold">
+                        Edit User
                     </h2>
 
                     <button
                         onClick={onClose}
-                        className="p-2 hover:bg-gray-100 rounded-lg transition"
+                        className="p-1 hover:bg-gray-100 rounded-lg transition"
                     >
-                        <X size={20}/>
+                        <X size={20} />
                     </button>
 
                 </div>
 
-                <div className="p-6 space-y-5">
+                <div className="p-3 sm:p-4 md:p-6 space-y-4">
 
                     <div>
 
@@ -70,7 +70,7 @@ export default function UserFormModal({
                                     e.target.value
                                 )
                             }
-                            className="w-full border border-[#becab7] rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-[#006b11]"
+                            className="w-full border border-[#becab7] rounded-xl p-3"
                         />
 
                     </div>
@@ -82,7 +82,6 @@ export default function UserFormModal({
                         </label>
 
                         <input
-                            type="email"
                             value={formData.email}
                             onChange={(e) =>
                                 onChange(
@@ -90,25 +89,25 @@ export default function UserFormModal({
                                     e.target.value
                                 )
                             }
-                            className="w-full border border-[#becab7] rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-[#006b11]"
+                            className="w-full border border-[#becab7] rounded-xl p-3"
                         />
 
                     </div>
 
                 </div>
 
-                <div className="p-6 border-t border-[#becab7] flex justify-end gap-3">
+                <div className="p-4 border-t border-[#becab7] flex justify-end gap-3">
 
                     <button
                         onClick={onClose}
-                        className="px-5 py-2 border border-[#becab7] rounded-xl hover:bg-gray-50"
+                        className="px-5 py-2 border rounded-xl"
                     >
                         Cancel
                     </button>
 
                     <button
                         onClick={onSubmit}
-                        className="px-5 py-2 bg-[#006b11] text-white rounded-xl hover:bg-[#008818]"
+                        className="px-5 py-2 bg-[#006b11] text-white rounded-xl"
                     >
                         Save Changes
                     </button>
@@ -116,9 +115,6 @@ export default function UserFormModal({
                 </div>
 
             </div>
-
         </div>
-
     );
-
 }
