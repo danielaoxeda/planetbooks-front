@@ -37,14 +37,7 @@ export default function UserPage() {
         enabled: true,
     });
 
-    useEffect(() => {
-
-        loadUsers();
-
-    }, []);
-
-    const loadUsers = async () => {
-
+    async function loadUsers() {
         try {
 
             const data = await userService.getAll();
@@ -58,8 +51,19 @@ export default function UserPage() {
             alert("Error loading users.");
 
         }
+    }
 
-    };
+    useEffect(() => {
+
+        const fetchUsers = async () => {
+
+            await loadUsers();
+
+        };
+
+        fetchUsers();
+
+    }, []);
 
     const handleChange = (
         field: string,
