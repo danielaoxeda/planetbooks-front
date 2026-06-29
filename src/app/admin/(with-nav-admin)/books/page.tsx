@@ -59,13 +59,8 @@ export default function BooksPage() {
         newBook: Product
     ) => {
         try {
-
-            await createProduct(newBook);
-
             setModalOpen(false);
-
             await refreshProducts();
-
         } catch (error) {
             console.error(error);
         }
@@ -75,7 +70,6 @@ export default function BooksPage() {
         updatedBook: Product
     ) => {
         try {
-
             await updateProduct(
                 updatedBook.id,
                 updatedBook

@@ -17,7 +17,7 @@ export function validateBookForm(
     const errors: Record<string, string> = {};
 
     if (!formData.title.trim()) {
-        errors.title = "Title is required";
+        errors.title = "Book title is required";
     }
 
     if (!formData.description.trim()) {
@@ -25,7 +25,7 @@ export function validateBookForm(
     }
 
     if (!formData.tag.trim()) {
-        errors.tag = "Category is required";
+        errors.tag = "Exam is required";
     }
 
     if (!formData.level.trim()) {
@@ -34,6 +34,8 @@ export function validateBookForm(
 
     if (!formData.pages.trim()) {
         errors.pages = "Pages is required";
+    } else if (Number(formData.pages) <= 0) {
+        errors.pages = "Pages must be greater than 0";
     }
 
     if (!formData.format.trim()) {

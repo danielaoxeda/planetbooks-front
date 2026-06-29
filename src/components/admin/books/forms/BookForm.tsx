@@ -46,11 +46,10 @@ export default function BookForm({
                 )}
             </div>
 
-            {/* CATEGORY */}
 
             <div>
                 <label className="block text-sm font-medium mb-2">
-                    Category
+                    Exam
                 </label>
 
                 <select
@@ -64,16 +63,16 @@ export default function BookForm({
                     className="w-full border border-gray-200 rounded-xl px-4 py-3"
                 >
                     <option value="">
-                        Select category
+                        Select Exam
                     </option>
 
-                    <option value="Practice Tests">
-                        Practice Tests
-                    </option>
-
-                    <option value="Coursebook">
-                        Coursebook
-                    </option>
+                    <option value="YLE">YLE</option>
+                    <option value="KET">KET</option>
+                    <option value="PET">PET</option>
+                    <option value="FCE">FCE</option>
+                    <option value="CAE">CAE</option>
+                    <option value="IELTS">IELTS</option>
+                    <option value="TOEFL">TOEFL</option>
                 </select>
 
                 {errors.tag && (
@@ -112,7 +111,7 @@ export default function BookForm({
 
             <div>
                 <label className="block text-sm font-medium mb-2">
-                    Exam
+                    Level
                 </label>
 
                 <select
@@ -126,36 +125,13 @@ export default function BookForm({
                     className="w-full border border-gray-200 rounded-xl px-4 py-3"
                 >
                     <option value="">
-                        Select Exam
+                        Select Level
                     </option>
 
-                    <option value="YLE">
-                        YLE
-                    </option>
+                    <option value="Elementary">Elementary</option>
+                    <option value="Intermediate">Intermediate</option>
+                    <option value="Advanced">Advanced</option>
 
-                    <option value="KET">
-                        KET
-                    </option>
-
-                    <option value="PET">
-                        PET
-                    </option>
-
-                    <option value="FCE">
-                        FCE
-                    </option>
-
-                    <option value="CAE">
-                        CAE
-                    </option>
-
-                    <option value="IELTS">
-                        IELTS
-                    </option>
-
-                    <option value="TOEFL">
-                        TOEFL
-                    </option>
                 </select>
 
                 {errors.level && (
@@ -165,7 +141,7 @@ export default function BookForm({
                 )}
             </div>
 
-            {/* Pages */}
+            {/* PAGES */}
 
             <div>
                 <label className="block text-sm font-medium mb-2">
@@ -198,8 +174,7 @@ export default function BookForm({
                     Format
                 </label>
 
-                <input
-                    type="text"
+                <select
                     value={formData.format}
                     onChange={(e) =>
                         onChange(
@@ -208,7 +183,19 @@ export default function BookForm({
                         )
                     }
                     className="w-full border border-gray-200 rounded-xl px-4 py-3"
-                />
+                >
+                    <option value="">
+                        Select Format
+                    </option>
+
+                    <option value="Practice Tests">
+                        Practice Tests
+                    </option>
+
+                    <option value="Coursebook">
+                        Coursebook
+                    </option>
+                </select>
 
                 {errors.format && (
                     <p className="text-red-500 text-sm mt-1">

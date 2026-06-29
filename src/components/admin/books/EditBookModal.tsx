@@ -23,7 +23,7 @@ const emptyForm: BookFormData = {
     description: "",
     tag: "",
     level: "",
-    year: "",
+    pages: "",
     format: "",
     publisher: "",
     language: "",
@@ -38,14 +38,11 @@ export default function EditBookModal({
                                           onSave,
                                       }: Props) {
 
-    const [formData, setFormData] =
-        useState<BookFormData>(emptyForm);
+    const [formData, setFormData] = useState<BookFormData>(emptyForm);
 
-    const [errors, setErrors] =
-        useState<Record<string, string>>({});
+    const [errors, setErrors] = useState<Record<string, string>>({});
 
-    const [preview, setPreview] =
-        useState("");
+    const [preview, setPreview] = useState("");
 
     useEffect(() => {
 
@@ -56,7 +53,7 @@ export default function EditBookModal({
             description: book.description ?? "",
             tag: book.tag ?? "",
             level: book.level ?? "",
-            year: String(book.year ?? ""),
+            pages: book.pages ?? "",
             format: book.format ?? "",
             publisher: book.publisher ?? "",
             language: book.language ?? "",
@@ -76,16 +73,10 @@ export default function EditBookModal({
         value: string
     ) => {
 
-        setFormData(prev => ({
-            ...prev,
-            [field]: value,
-        }));
+        setFormData(prev => ({...prev, [field]: value,}));
 
         if (errors[field]) {
-            setErrors(prev => ({
-                ...prev,
-                [field]: "",
-            }));
+            setErrors(prev => ({...prev, [field]: "",}));
         }
     };
 
@@ -93,28 +84,21 @@ export default function EditBookModal({
         e: React.ChangeEvent<HTMLInputElement>
     ) => {
 
-        const file =
-            e.target.files?.[0];
-
+        const file = e.target.files?.[0];
         if (!file) return;
 
-        const imageUrl =
-            URL.createObjectURL(file);
-
+        const imageUrl = URL.createObjectURL(file);
         setPreview(imageUrl);
 
-        setFormData(prev => ({
-            ...prev,
-            image: imageUrl,
-        }));
+        setFormData(prev => ({...prev, image: imageUrl,}));
     };
 
     const handleSubmit = () => {
+        console.log(formData);
 
         if (!book) return;
 
-        const validationErrors =
-            validateBookForm(formData);
+        const validationErrors = validateBookForm(formData);
 
         if (
             Object.keys(validationErrors).length > 0
@@ -128,34 +112,15 @@ export default function EditBookModal({
             ...book,
 
             title: formData.title,
-
-            description:
-            formData.description,
-
+            description: formData.description,
             tag: formData.tag,
-
-            categories: [
-                formData.level,
-            ],
-
-            level:
-            formData.level,
-
-            year:
-            formData.year,
-
-            format:
-            formData.format,
-
-            publisher:
-            formData.publisher,
-
-            language:
-            formData.language,
-
-            image:
-            formData.image,
-
+            categories: [formData.level,],
+            level: formData.level,
+            pages: formData.pages,
+            format: formData.format,
+            publisher: formData.publisher,
+            language: formData.language,
+            image: formData.image,
             items:
                 book.items?.length > 0
                     ? [
@@ -174,7 +139,6 @@ export default function EditBookModal({
         };
 
         onSave(updatedBook);
-        onClose();
     };
 
     if (!open || !book) {
