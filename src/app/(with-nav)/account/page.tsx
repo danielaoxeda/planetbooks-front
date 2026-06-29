@@ -503,6 +503,65 @@ function AccountProfileForm({
                                 </div>
                             </section>
                         )}
+
+                        {/* Notifications Section */}
+                        {viewMode === 'notifications' && (
+                            <section className="rounded-[28px] border border-white/70 bg-white/80 p-6 shadow-[0_12px_40px_rgba(15,23,42,0.08)] backdrop-blur sm:p-8">
+                                <div className="mb-6">
+                                    <p className="text-xs font-semibold uppercase tracking-[0.24em] text-primary">Preferences</p>
+                                    <h2 className="mt-2 text-2xl font-bold tracking-tight text-on-surface">Notifications</h2>
+                                    <p className="mt-2 text-sm text-on-surface-variant">
+                                        Choose what notifications you want to receive.
+                                    </p>
+                                </div>
+
+                                <div className="space-y-4">
+                                    <ToggleOption
+                                        title="Email Notifications"
+                                        description="Receive notifications via email"
+                                        checked={notifications.emailNotifications}
+                                        onChange={(checked) =>
+                                            setNotifications((prev) => ({ ...prev, emailNotifications: checked }))
+                                        }
+                                    />
+                                    <ToggleOption
+                                        title="Order Updates"
+                                        description="Get updates about your orders and shipments"
+                                        checked={notifications.orderUpdates}
+                                        onChange={(checked) =>
+                                            setNotifications((prev) => ({ ...prev, orderUpdates: checked }))
+                                        }
+                                    />
+                                    <ToggleOption
+                                        title="Promotions & Offers"
+                                        description="Receive promotional emails about deals and offers"
+                                        checked={notifications.promotions}
+                                        onChange={(checked) =>
+                                            setNotifications((prev) => ({ ...prev, promotions: checked }))
+                                        }
+                                    />
+                                    <ToggleOption
+                                        title="Newsletter"
+                                        description="Weekly digest and new book announcements"
+                                        checked={notifications.newsletter}
+                                        onChange={(checked) =>
+                                            setNotifications((prev) => ({ ...prev, newsletter: checked }))
+                                        }
+                                    />
+                                </div>
+
+                                <div className="mt-6 flex justify-end">
+                                    <button
+                                        type="button"
+                                        onClick={handleSaveNotifications}
+                                        disabled={isSaving}
+                                        className="rounded-2xl bg-primary px-6 py-3 text-sm font-semibold text-white shadow-sm transition-transform hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-70"
+                                    >
+                                        {isSaving ? 'Saving...' : 'Save Preferences'}
+                                    </button>
+                                </div>
+                            </section>
+                        )}
                     </div>
                 </div>
             </div>
