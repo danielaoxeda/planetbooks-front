@@ -4,7 +4,7 @@ import { useState } from "react";
 
 import { Product } from "@/types/product";
 
-import { createProduct } from "@/services/productService";
+import {createProduct, uploadProductImage} from "@/services/productService";
 import {BookFormData, validateBookForm} from "@/components/admin/books/forms/BookValidation";
 import BookForm from "@/components/admin/books/forms/BookForm";
 
@@ -33,31 +33,18 @@ export default function AddBookModal({
                                          onSave,
                                      }: Props) {
 
-    const [formData, setFormData] =
-        useState<BookFormData>(
-            initialFormData
-        );
-
-    const [errors, setErrors] =
-        useState<Record<string, string>>(
-            {}
-        );
-
-    const [saving, setSaving] =
-        useState(false);
-
-    const [preview, setPreview] =
-        useState("");
+    const [formData, setFormData] = useState<BookFormData>(         initialFormData);
+    const [errors, setErrors] = useState<Record<string, string>>({});
+    const [saving, setSaving] = useState(false);
+    const [preview, setPreview] = useState("");
+    const [imageFile, setImageFile] = useState<File | null>(null);
 
     const handleChange = (
         field: keyof BookFormData,
         value: string
     ) => {
 
-        setFormData((prev) => ({
-            ...prev,
-            [field]: value,
-        }));
+        setFormData((prev) => ({...prev, [field]: value,}));
 
         if (errors[field]) {
             setErrors((prev) => ({
@@ -71,20 +58,14 @@ export default function AddBookModal({
         e: React.ChangeEvent<HTMLInputElement>
     ) => {
 
-        const file =
-            e.target.files?.[0];
+        const file = e.target.files?.[0];
 
         if (!file) return;
 
-        const imageUrl =
-            URL.createObjectURL(file);
+        setImageFile(file);
 
-        setPreview(imageUrl);
-
-        setFormData((prev) => ({
-            ...prev,
-            image: imageUrl,
-        }));
+        setPreview(URL.createObjectURL(file)
+        );
     };
 
     const resetForm = () => {
@@ -100,8 +81,7 @@ export default function AddBookModal({
 
     const handleSubmit = async () => {
 
-        const validationErrors =
-            validateBookForm(formData);
+        const validationErrors = validateBookForm(formData);
 
         if (
             Object.keys(
@@ -128,7 +108,7 @@ export default function AddBookModal({
                 tag: formData.tag,
                 categories: [formData.level,],
                 level: formData.level,
-                image: formData.image,
+                image: "",
                 pages: formData.pages,
                 format: formData.format,
                 publisher: formData.publisher,
@@ -145,10 +125,11 @@ export default function AddBookModal({
                 ],
             };
 
-            const savedBook =
-                await createProduct(
-                    payload
-                );
+            const savedBook = await createProduct(payload);
+            if (imageFile) {
+
+                await uploadProductImage(savedBook.id, imageFile);
+            }
 
             onSave(savedBook);
 
@@ -208,69 +189,6 @@ export default function AddBookModal({
                     errors={errors}
                     onChange={handleChange}
                 />
-
-                {/* IMAGE */}
-
-                <div className="mt-6">
-
-                    <label className="block text-sm font-medium mb-2">
-                        Book Cover
-                    </label>
-
-                    <label
-                        className="
-                            border-2
-                            border-dashed
-                            border-gray-300
-                            rounded-2xl
-                            p-6
-                            flex
-                            flex-col
-                            items-center
-                            justify-center
-                            cursor-pointer
-                            hover:border-[#006b11]
-                            transition
-                        "
-                    >
-
-                        <span className="text-sm text-gray-500">
-                            Upload Book Cover
-                        </span>
-
-                        <input
-                            type="file"
-                            accept="image/*"
-                            className="hidden"
-                            onChange={
-                                handleImageUpload
-                            }
-                        />
-
-                    </label>
-
-                </div>
-
-                {/* PREVIEW */}
-
-                {preview && (
-
-                    <div className="flex justify-center mt-6">
-
-                        <img
-                            src={preview}
-                            alt="Preview"
-                            className="
-                                w-40
-                                rounded-2xl
-                                border
-                                border-gray-200
-                                shadow-sm
-                            "
-                        />
-
-                    </div>
-                )}
 
                 {/* ACTIONS */}
 
