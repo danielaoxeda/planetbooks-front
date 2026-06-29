@@ -12,7 +12,6 @@ import UserDeleteModal from "@/components/admin/user/UserDeleteModal";
 import FooterCards from "@/components/admin/footer-cards/FooterCards";
 
 import { User, UpdateUserRequest } from "@/types/user";
-import { RegisterRequest } from "@/types/auth";
 
 import { userService } from "@/services/userService";
 
@@ -39,10 +38,12 @@ export default function UserPage() {
     });
 
     useEffect(() => {
+
         loadUsers();
+
     }, []);
 
-    async function loadUsers() {
+    const loadUsers = async () => {
 
         try {
 
@@ -58,7 +59,7 @@ export default function UserPage() {
 
         }
 
-    }
+    };
 
     const handleChange = (
         field: string,
@@ -71,7 +72,6 @@ export default function UserPage() {
         }));
 
     };
-
 
     const openEditModal = (
         user: User
@@ -144,6 +144,34 @@ export default function UserPage() {
 
     };
 
+    const handleToggleStatus = async (
+        user: User
+    ) => {
+
+        try {
+
+            if (user.enabled) {
+
+                await userService.disable(user.id);
+
+            } else {
+
+                await userService.enable(user.id);
+
+            }
+
+            await loadUsers();
+
+        } catch (error) {
+
+            console.error(error);
+
+            alert("Error updating user status.");
+
+        }
+
+    };
+
     const filteredUsers = users.filter((user) =>
         user.name
             .toLowerCase()
@@ -151,6 +179,7 @@ export default function UserPage() {
     );
 
     return (
+
         <div className="w-full max-w-full p-3 sm:p-4 md:p-6 lg:p-8">
 
             <div className="w-full max-w-full space-y-4 sm:space-y-6">
@@ -189,6 +218,7 @@ export default function UserPage() {
                         setDeleteOpen(true);
 
                     }}
+                    onToggleStatus={handleToggleStatus}
                 />
 
                 <UserPagination
@@ -218,6 +248,7 @@ export default function UserPage() {
             />
 
         </div>
+
     );
 
 }
