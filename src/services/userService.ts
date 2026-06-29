@@ -1,23 +1,60 @@
-import { User } from "@/types/user";
+import api from "@/lib/axios";
+import { User, UpdateUserRequest } from "@/types/user";
 
-export const UserService = {
+export const userService = {
+
     async getAll(): Promise<User[]> {
-        return [];
+
+        const response = await api.get("/v1/users");
+
+        return response.data;
+
     },
 
-    async getById(id: number): Promise<User | null> {
-        return null;
+    async getById(id: number): Promise<User> {
+
+        const response = await api.get(`/v1/users/${id}`);
+
+        return response.data;
+
     },
 
-    async create(user: Omit<User, "id">) {
-        console.log("create", user);
+    async update(id: number, data: UpdateUserRequest): Promise<User> {
+
+        const response = await api.put(`/v1/users/${id}`, data);
+
+        return response.data;
+
     },
 
-    async update(id: number, user: Partial<User>) {
-        console.log("update", id, user);
+    async delete(id: number): Promise<void> {
+
+        await api.delete(`/v1/users/${id}`);
+
     },
 
-    async delete(id: number) {
-        console.log("delete", id);
+    async enable(id: number): Promise<void> {
+
+        await api.patch(`/v1/users/${id}/enable`);
+
     },
+
+    async disable(id: number): Promise<void> {
+
+        await api.patch(`/v1/users/${id}/disable`);
+
+    },
+
+    async promote(id: number): Promise<void> {
+
+        await api.patch(`/v1/users/${id}/promote`);
+
+    },
+
+    async demote(id: number): Promise<void> {
+
+        await api.patch(`/v1/users/${id}/demote`);
+
+    }
+
 };

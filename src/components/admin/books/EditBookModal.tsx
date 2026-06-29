@@ -1,10 +1,15 @@
 "use client";
 
-import {useEffect, useState} from "react";
+import { useEffect, useState } from "react";
 
-import {Upload} from "lucide-react";
+import { Product } from "@/types/product";
 
-import {Product} from "@/types/product";
+import BookForm from "@/components/admin/books/forms/BookForm";
+
+import {
+    BookFormData,
+    validateBookForm,
+} from "@/components/admin/books/forms/BookValidation";
 
 interface Props {
     open: boolean;
@@ -13,6 +18,19 @@ interface Props {
     onSave: (updatedBook: Product) => void;
 }
 
+const emptyForm: BookFormData = {
+    title: "",
+    description: "",
+    tag: "",
+    level: "",
+    pages: "",
+    format: "",
+    publisher: "",
+    language: "",
+    image: "",
+    price: "",
+};
+
 export default function EditBookModal({
                                           open,
                                           onClose,
@@ -20,137 +38,112 @@ export default function EditBookModal({
                                           onSave,
                                       }: Props) {
 
-    const [preview, setPreview] =
-        useState("");
+    const [formData, setFormData] = useState<BookFormData>(emptyForm);
 
-    const [formData, setFormData] =
-        useState({
-            title: "",
-            description: "",
-            tag: "",
-            level: "",
-            pages: "",
-            format: "",
-            publisher: "",
-            language: "English",
-            image: "",
-            price: "",
-        });
+    const [errors, setErrors] = useState<Record<string, string>>({});
+
+    const [preview, setPreview] = useState("");
 
     useEffect(() => {
 
-        if (book) {
+        if (!book) return;
 
-            setFormData({
-                title: book.title,
-                description:
-                book.description,
-                tag: book.tag,
-                level: book.level,
-                pages: book.pages,
-                format: book.format,
-                publisher:
-                book.publisher,
-                language:
-                book.language,
-                image: book.image,
-                price: String(
-                    book.items?.[0]
-                        ?.price || 0
-                ),
-            });
+        const newForm: BookFormData = {
+            title: book.title ?? "",
+            description: book.description ?? "",
+            tag: book.tag ?? "",
+            level: book.level ?? "",
+            pages: book.pages ?? "",
+            format: book.format ?? "",
+            publisher: book.publisher ?? "",
+            language: book.language ?? "",
+            image: book.image ?? "",
+            price: String(
+                book.items?.[0]?.price ?? ""
+            ),
+        };
 
-            setPreview(book.image);
-        }
+        setFormData(newForm);
+        setPreview(book.image ?? "");
 
     }, [book]);
 
     const handleChange = (
-        field: string,
+        field: keyof BookFormData,
         value: string
     ) => {
 
-        setFormData((prev) => ({
-            ...prev,
-            [field]: value,
-        }));
+        setFormData(prev => ({...prev, [field]: value,}));
+
+        if (errors[field]) {
+            setErrors(prev => ({...prev, [field]: "",}));
+        }
     };
 
     const handleImageUpload = (
         e: React.ChangeEvent<HTMLInputElement>
     ) => {
 
-        const file =
-            e.target.files?.[0];
-
+        const file = e.target.files?.[0];
         if (!file) return;
 
-        const imageUrl =
-            URL.createObjectURL(file);
-
+        const imageUrl = URL.createObjectURL(file);
         setPreview(imageUrl);
 
-        setFormData((prev) => ({
-            ...prev,
-            image: imageUrl,
-        }));
+        setFormData(prev => ({...prev, image: imageUrl,}));
     };
 
     const handleSubmit = () => {
+        console.log(formData);
 
         if (!book) return;
 
+        const validationErrors = validateBookForm(formData);
+
+        if (
+            Object.keys(validationErrors).length > 0
+        ) {
+            setErrors(validationErrors);
+            return;
+        }
+
         const updatedBook: Product = {
+
             ...book,
 
-            title:
-            formData.title,
+            title: formData.title,
+            description: formData.description,
+            tag: formData.tag,
+            categories: [formData.level,],
+            level: formData.level,
+            pages: formData.pages,
+            format: formData.format,
+            publisher: formData.publisher,
+            language: formData.language,
+            image: formData.image,
+            items:
+                book.items?.length > 0
+                    ? [
+                        {
+                            ...book.items[0],
 
-            description:
-            formData.description,
+                            price: Number(
+                                formData.price
+                            ),
 
-            tag:
-            formData.tag,
-
-            categories: [
-                formData.tag,
-            ],
-
-            level:
-            formData.level,
-
-            pages:
-            formData.pages,
-
-            format:
-            formData.format,
-
-            publisher:
-            formData.publisher,
-
-            language:
-            formData.language,
-
-            image:
-            formData.image,
-
-            items: [
-                {
-                    ...book.items[0],
-                    price: Number(formData.price),
-                    image: formData.image,
-                },
-            ],
-
+                            image:
+                            formData.image,
+                        },
+                    ]
+                    : [],
         };
 
         onSave(updatedBook);
-
-        onClose();
     };
 
-    if (!open || !book)
+    if (!open || !book) {
         return null;
+    }
 
     return (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
@@ -164,7 +157,7 @@ export default function EditBookModal({
                             Edit Book
                         </h2>
 
-                        <p className="text-sm text-gray-500 mt-1">
+                        <p className="text-sm text-gray-500">
                             Update book information
                         </p>
                     </div>
@@ -178,259 +171,52 @@ export default function EditBookModal({
 
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <BookForm
+                    formData={formData}
+                    errors={errors}
+                    onChange={handleChange}
+                />
 
-                    <div>
-                        <label className="block text-sm font-medium mb-2">
-                            Book Title
-                        </label>
+                <div className="mt-6">
 
-                        <input
-                            type="text"
-                            value={
-                                formData.title
-                            }
-                            onChange={(e) =>
-                                handleChange(
-                                    "title",
-                                    e.target.value
-                                )
-                            }
-                            className="w-full border border-gray-200 rounded-xl px-4 py-3"
-                        />
-                    </div>
+                    <label className="block text-sm font-medium mb-2">
+                        Book Cover
+                    </label>
 
-                    <div>
-                        <label className="block text-sm font-medium mb-2">
-                            Type
-                        </label>
-
-                        <select
-                            value={
-                                formData.tag
-                            }
-                            onChange={(e) =>
-                                handleChange(
-                                    "tag",
-                                    e.target.value
-                                )
-                            }
-                            className="w-full border border-gray-200 rounded-xl px-4 py-3"
-                        >
-                            <option value="Practice Tests">
-                                Practice Tests
-                            </option>
-
-                            <option value="Coursebook">
-                                Coursebook
-                            </option>
-                        </select>
-                    </div>
-
-                    <div className="md:col-span-2">
-                        <label className="block text-sm font-medium mb-2">
-                            Description
-                        </label>
-
-                        <textarea
-                            value={
-                                formData.description
-                            }
-                            onChange={(e) =>
-                                handleChange(
-                                    "description",
-                                    e.target.value
-                                )
-                            }
-                            className="w-full border border-gray-200 rounded-xl px-4 py-3 min-h-[120px]"
-                        />
-                    </div>
-
-                    <div>
-                        <label className="block text-sm font-medium mb-2">
-                            Level
-                        </label>
-
-                        <select
-                            value={
-                                formData.level
-                            }
-                            onChange={(e) =>
-                                handleChange(
-                                    "level",
-                                    e.target.value
-                                )
-                            }
-                            className="w-full border border-gray-200 rounded-xl px-4 py-3"
-                        >
-                            <option value="YLE - Starters, Movers & Flyers">
-                                YLE - Starters, Movers & Flyers
-                            </option>
-
-                            <option value="KET - A2 Key">
-                                KET - A2 Key
-                            </option>
-
-                            <option value="PET - B1">
-                                PET - B1
-                            </option>
-
-                            <option value="FCE - B2">
-                                FCE - B2
-                            </option>
-
-                            <option value="CAE - C1">
-                                CAE - C1
-                            </option>
-
-                            <option value="IELTS">
-                                IELTS
-                            </option>
-
-                            <option value="TOEFL">
-                                TOEFL
-                            </option>
-                        </select>
-                    </div>
-
-                    <div>
-                        <label className="block text-sm font-medium mb-2">
-                            Publisher
-                        </label>
-
-                        <select
-                            value={
-                                formData.publisher
-                            }
-                            onChange={(e) =>
-                                handleChange(
-                                    "publisher",
-                                    e.target.value
-                                )
-                            }
-                            className="w-full border border-gray-200 rounded-xl px-4 py-3"
-                        >
-                            <option value="Cambridge">
-                                Cambridge
-                            </option>
-
-                            <option value="Oxford">
-                                Oxford
-                            </option>
-
-                            <option value="Pearson">
-                                Pearson
-                            </option>
-
-                            <option value="ETS">
-                                ETS
-                            </option>
-
-                            <option value="Other">
-                                Other
-                            </option>
-                        </select>
-                    </div>
-
-                    <div>
-                        <label className="block text-sm font-medium mb-2">
-                            Format
-                        </label>
-
-                        <input
-                            type="text"
-                            value={
-                                formData.format
-                            }
-                            onChange={(e) =>
-                                handleChange(
-                                    "format",
-                                    e.target.value
-                                )
-                            }
-                            className="w-full border border-gray-200 rounded-xl px-4 py-3"
-                        />
-                    </div>
-
-                    <div>
-                        <label className="block text-sm font-medium mb-2">
-                            Price
-                        </label>
-
-                        <input
-                            type="number"
-                            value={
-                                formData.price
-                            }
-                            onChange={(e) =>
-                                handleChange(
-                                    "price",
-                                    e.target.value
-                                )
-                            }
-                            className="w-full border border-gray-200 rounded-xl px-4 py-3"
-                        />
-                    </div>
-
-                    <div className="md:col-span-2">
-
-                        <label className="block text-sm font-medium mb-2">
-                            Book Cover
-                        </label>
-
-                        <label
-                            className="border-2 border-dashed border-gray-300 rounded-2xl p-6 flex flex-col items-center justify-center cursor-pointer hover:border-[#006b11] transition">
-
-                            <Upload
-                                size={28}
-                                className="text-gray-400 mb-3"
-                            />
-
-                            <span className="text-sm text-gray-500">
-                                Upload Book Cover
-                            </span>
-
-                            <input
-                                type="file"
-                                accept="image/*"
-                                className="hidden"
-                                onChange={
-                                    handleImageUpload
-                                }
-                            />
-
-                        </label>
-
-                    </div>
-
-                    {preview && (
-                        <div className="md:col-span-2 flex justify-center">
-
-                            <img
-                                src={preview}
-                                alt="Preview"
-                                className="w-40 rounded-2xl border border-gray-200 shadow-sm"
-                            />
-
-                        </div>
-                    )}
+                    <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleImageUpload}
+                    />
 
                 </div>
+
+                {preview && (
+
+                    <div className="flex justify-center mt-6">
+
+                        <img
+                            src={preview}
+                            alt="Preview"
+                            className="w-40 rounded-2xl border border-gray-200"
+                        />
+
+                    </div>
+
+                )}
 
                 <div className="flex justify-end gap-3 mt-8">
 
                     <button
                         onClick={onClose}
-                        className="px-5 py-3 rounded-xl border border-gray-200 hover:bg-gray-50"
+                        className="px-5 py-3 rounded-xl border border-gray-200"
                     >
                         Cancel
                     </button>
 
                     <button
-                        onClick={
-                            handleSubmit
-                        }
-                        className="px-5 py-3 rounded-xl bg-[#006b11] text-white hover:bg-[#00520d]"
+                        onClick={handleSubmit}
+                        className="px-5 py-3 rounded-xl bg-[#006b11] text-white"
                     >
                         Save Changes
                     </button>
