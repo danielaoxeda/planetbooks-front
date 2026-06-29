@@ -5,3 +5,8 @@ export interface CheckoutRequest {
         quantity: number;
     }[];
 }
+
+export interface CheckoutResponse {
+    initPoint: string;
+    sandboxInitPoint?: string;
+}
