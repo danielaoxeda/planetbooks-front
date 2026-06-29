@@ -30,6 +30,13 @@ export const authService = {
         return response.data;
     },
 
+    async changePassword(id: number, data: ChangePasswordDTO): Promise<void> {
+        await api.put(`/v1/users/${id}/password`, {
+            currentPassword: data.currentPassword,
+            newPassword: data.newPassword,
+        });
+    },
+
     async getMe(): Promise<User> {
         const response = await api.get<User>("/auth/me");
         return response.data;
