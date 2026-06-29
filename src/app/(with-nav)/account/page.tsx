@@ -1,42 +1,47 @@
 'use client'
 
 import Link from 'next/link'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import {
+    AlertCircle,
     BadgeCheck,
     BookOpen,
+    CheckCircle,
     LogOut,
     ShieldCheck,
     Sparkles,
 } from 'lucide-react'
 import { useAuth } from '@/context/AuthContext'
 import { authService } from '@/services/authService'
-
-type AccountUser = {
-    name: string
-    email: string
-    role: 'ADMIN' | 'USER'
-}
+import { User } from '@/types/user'
 
 type ViewMode = 'profile' | 'password'
+
+type StatusType = 'success' | 'error' | 'info' | null
+
+interface StatusMessage {
+    text: string
+    type: StatusType
+}
 
 function AccountProfileForm({
                                 currentUser,
                                 updateUser,
                                 onLogout,
                             }: {
-    currentUser: AccountUser
-    updateUser: (userData: AccountUser) => void
+    currentUser: User
+    updateUser: (userData: User) => void
     onLogout: () => void
 }) {
     const [viewMode, setViewMode] = useState<ViewMode>('profile')
     const [isEditing, setIsEditing] = useState(false)
     const [name, setName] = useState(() => currentUser.name || currentUser.email.split('@')[0])
     const [email, setEmail] = useState(() => currentUser.email)
+    const [currentPassword, setCurrentPassword] = useState('')
     const [newPassword, setNewPassword] = useState('')
     const [confirmPassword, setConfirmPassword] = useState('')
-    const [statusMessage, setStatusMessage] = useState<string | null>(null)
+    const [status, setStatus] = useState<StatusMessage>(null)
     const [isSaving, setIsSaving] = useState(false)
 
     const displayName = name.trim() || currentUser.name || currentUser.email.split('@')[0]
@@ -48,28 +53,33 @@ function AccountProfileForm({
         .join('') || displayName.slice(0, 2).toUpperCase()
     const roleLabel = currentUser.role === 'ADMIN' ? 'Administrator access' : 'Learner access'
 
-    const resetProfileFields = () => {
+    const resetProfileFields = useCallback(() => {
         setName(currentUser.name || currentUser.email.split('@')[0])
         setEmail(currentUser.email)
         setIsEditing(false)
-    }
+    }, [currentUser])
 
-    const resetPasswordFields = () => {
+    const resetPasswordFields = useCallback(() => {
+        setCurrentPassword('')
         setNewPassword('')
         setConfirmPassword('')
-    }
+    }, [])
+
+    const clearStatus = useCallback(() => {
+        setStatus(null)
+    }, [])
 
     const handleCancel = () => {
         if (viewMode === 'password') {
             setViewMode('profile')
             resetPasswordFields()
             resetProfileFields()
-            setStatusMessage(null)
+            clearStatus()
             return
         }
 
         resetProfileFields()
-        setStatusMessage('Changes discarded.')
+        setStatus({ text: 'Changes discarded.', type: 'info' })
     }
 
     const handleTogglePassword = () => {
@@ -77,30 +87,47 @@ function AccountProfileForm({
         setIsEditing(false)
         resetProfileFields()
         resetPasswordFields()
-        setStatusMessage('Password form enabled.')
+        setStatus({ text: 'Password form enabled.', type: 'info' })
     }
 
     const handleSave = async () => {
         setIsSaving(true)
+        clearStatus()
 
         try {
             if (viewMode === 'password') {
-                if (!newPassword.trim() || !confirmPassword.trim()) {
-                    setStatusMessage('Please complete all password fields.')
+                // Password validation
+                if (!currentPassword.trim()) {
+                    setStatus({ text: 'Please enter your current password.', type: 'error' })
+                    setIsSaving(false)
+                    return
+                }
+
+                if (!newPassword.trim()) {
+                    setStatus({ text: 'Please enter a new password.', type: 'error' })
+                    setIsSaving(false)
+                    return
+                }
+
+                if (newPassword.length < 6) {
+                    setStatus({ text: 'New password must be at least 6 characters.', type: 'error' })
+                    setIsSaving(false)
                     return
                 }
 
                 if (newPassword !== confirmPassword) {
-                    setStatusMessage('The new passwords do not match.')
+                    setStatus({ text: 'The new passwords do not match.', type: 'error' })
+                    setIsSaving(false)
                     return
                 }
 
-                const updatedUser = await authService.changePassword(currentUser.email, {
+                await authService.changePassword(currentUser.id, {
+                    currentPassword: currentPassword.trim(),
                     newPassword: newPassword.trim(),
+                    confirmPassword: confirmPassword.trim(),
                 })
 
-                updateUser(updatedUser)
-                setStatusMessage('Password updated successfully.')
+                setStatus({ text: 'Password updated successfully!', type: 'success' })
                 setViewMode('profile')
                 setIsEditing(false)
                 resetPasswordFields()
@@ -109,24 +136,65 @@ function AccountProfileForm({
 
             if (!isEditing) {
                 setIsEditing(true)
-                setStatusMessage('Fields unlocked for editing.')
+                setStatus({ text: 'Fields unlocked for editing.', type: 'info' })
                 return
             }
 
-            const updatedUser = await authService.updateProfile(currentUser.email, {
-                name: name.trim() || currentUser.name,
+            // Profile validation
+            if (!name.trim()) {
+                setStatus({ text: 'Name cannot be empty.', type: 'error' })
+                setIsSaving(false)
+                return
+            }
+
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+            if (!emailRegex.test(email.trim())) {
+                setStatus({ text: 'Please enter a valid email address.', type: 'error' })
+                setIsSaving(false)
+                return
+            }
+
+            const updatedUser = await authService.updateProfile(currentUser.id, {
+                name: name.trim(),
                 email: email.trim(),
             })
 
             updateUser(updatedUser)
-            setStatusMessage('Profile updated successfully.')
+            setStatus({ text: 'Profile updated successfully!', type: 'success' })
             setIsEditing(false)
-        } catch (error) {
-            const message = error instanceof Error ? error.message : 'Unable to update profile.'
-            setStatusMessage(message)
+        } catch (error: unknown) {
+            console.error('Error saving profile:', error)
+            let errorMessage = 'Unable to update profile. Please try again.'
+
+            if (error && typeof error === 'object' && 'response' in error) {
+                const axiosError = error as { response?: { data?: { message?: string } } }
+                if (axiosError.response?.data?.message) {
+                    errorMessage = axiosError.response.data.message
+                } else if (axiosError.response?.status === 401) {
+                    errorMessage = 'Your session may have expired. Please log in again.'
+                } else if (axiosError.response?.status === 400) {
+                    errorMessage = 'Invalid data. Please check your input.'
+                }
+            }
+
+            setStatus({ text: errorMessage, type: 'error' })
         } finally {
             setIsSaving(false)
         }
+    }
+
+    const getStatusIcon = () => {
+        if (!status) return null
+        if (status.type === 'success') return <CheckCircle size={16} className="text-green-600" />
+        if (status.type === 'error') return <AlertCircle size={16} className="text-red-600" />
+        return <AlertCircle size={16} className="text-blue-600" />
+    }
+
+    const getStatusClass = () => {
+        if (!status) return ''
+        if (status.type === 'success') return 'bg-green-50 border-green-200 text-green-800'
+        if (status.type === 'error') return 'bg-red-50 border-red-200 text-red-800'
+        return 'bg-blue-50 border-blue-200 text-blue-800'
     }
 
     return (
@@ -181,7 +249,11 @@ function AccountProfileForm({
 
                         <button
                             type="button"
-                            onClick={() => setViewMode('profile')}
+                            onClick={() => {
+                                setViewMode('profile')
+                                resetPasswordFields()
+                                clearStatus()
+                            }}
                             className={`mt-4 inline-flex w-full items-center justify-center gap-2 rounded-2xl px-4 py-3 text-sm font-semibold transition-colors ${viewMode === 'profile'
                                 ? 'bg-primary text-white shadow-sm'
                                 : 'border border-outline-variant/70 bg-surface-container-low text-on-surface-variant hover:bg-surface-container-high'
@@ -232,7 +304,7 @@ function AccountProfileForm({
                                 </div>
 
                                 <div className="rounded-2xl border border-outline-variant/60 bg-surface-container-low px-4 py-3 text-sm text-on-surface-variant">
-                                    Account status: <span className="font-semibold text-primary">Active</span>
+                                    Account status: <span className="font-semibold text-primary">{currentUser.enabled ? 'Active' : 'Inactive'}</span>
                                 </div>
                             </div>
 
@@ -240,11 +312,23 @@ function AccountProfileForm({
                                 {viewMode === 'password' ? (
                                     <>
                                         <label className="grid gap-2">
+                                            <span className="text-xs font-semibold uppercase tracking-[0.2em] text-on-surface-variant">Current password</span>
+                                            <input
+                                                type="password"
+                                                value={currentPassword}
+                                                onChange={(event) => setCurrentPassword(event.target.value)}
+                                                placeholder="Enter your current password"
+                                                className="rounded-2xl border border-outline-variant/60 bg-surface-container-lowest px-4 py-3 text-sm text-on-surface outline-none transition-colors placeholder:text-on-surface-variant/60 focus:border-primary"
+                                            />
+                                        </label>
+
+                                        <label className="grid gap-2">
                                             <span className="text-xs font-semibold uppercase tracking-[0.2em] text-on-surface-variant">New password</span>
                                             <input
                                                 type="password"
                                                 value={newPassword}
                                                 onChange={(event) => setNewPassword(event.target.value)}
+                                                placeholder="Enter new password (min. 6 characters)"
                                                 className="rounded-2xl border border-outline-variant/60 bg-surface-container-lowest px-4 py-3 text-sm text-on-surface outline-none transition-colors placeholder:text-on-surface-variant/60 focus:border-primary"
                                             />
                                         </label>
@@ -255,6 +339,7 @@ function AccountProfileForm({
                                                 type="password"
                                                 value={confirmPassword}
                                                 onChange={(event) => setConfirmPassword(event.target.value)}
+                                                placeholder="Confirm your new password"
                                                 className="rounded-2xl border border-outline-variant/60 bg-surface-container-lowest px-4 py-3 text-sm text-on-surface outline-none transition-colors placeholder:text-on-surface-variant/60 focus:border-primary"
                                             />
                                         </label>
@@ -300,13 +385,16 @@ function AccountProfileForm({
                                             disabled={isSaving}
                                             className="rounded-2xl bg-primary px-5 py-3 text-sm font-semibold text-white shadow-sm transition-transform hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-70"
                                         >
-                                            {viewMode === 'password' ? 'Update Password' : isEditing ? 'Update Profile' : 'Edit Profile'}
+                                            {isSaving ? 'Saving...' : viewMode === 'password' ? 'Update Password' : isEditing ? 'Save Changes' : 'Edit Profile'}
                                         </button>
                                     </div>
                                 </div>
 
-                                {statusMessage ? (
-                                    <p className="text-sm font-medium text-on-surface-variant">{statusMessage}</p>
+                                {status ? (
+                                    <div className={`flex items-center gap-2 rounded-2xl border px-4 py-3 text-sm font-medium ${getStatusClass()}`}>
+                                        {getStatusIcon()}
+                                        {status.text}
+                                    </div>
                                 ) : null}
                             </div>
                         </section>
@@ -348,11 +436,11 @@ function AccountProfileForm({
                                 <div className="mt-6 grid gap-4 sm:grid-cols-2">
                                     <div className="rounded-2xl bg-white/10 p-4 ring-1 ring-inset ring-white/15">
                                         <p className="text-xs uppercase tracking-[0.2em] text-white/70">Plan</p>
-                                        <p className="mt-2 text-lg font-semibold">Premium Learner</p>
+                                        <p className="mt-2 text-lg font-semibold">{currentUser.role === 'ADMIN' ? 'Administrator' : 'Learner'}</p>
                                     </div>
                                     <div className="rounded-2xl bg-white/10 p-4 ring-1 ring-inset ring-white/15">
                                         <p className="text-xs uppercase tracking-[0.2em] text-white/70">Status</p>
-                                        <p className="mt-2 text-lg font-semibold">Active</p>
+                                        <p className="mt-2 text-lg font-semibold">{currentUser.enabled ? 'Active' : 'Inactive'}</p>
                                     </div>
                                 </div>
                             </div>

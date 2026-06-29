@@ -16,3 +16,9 @@ export interface LoginResponse {
     token: string;
     user: User;
 }
+
+export interface ChangePasswordDTO {
+    currentPassword: string;
+    newPassword: string;
+    confirmPassword: string;
+}
