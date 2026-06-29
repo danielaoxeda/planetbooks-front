@@ -2,8 +2,11 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { useState } from "react";
 import { Minus, Plus, ShoppingBag, Trash2 } from "lucide-react";
 import { useCart } from "@/context/CartContext";
+import { useAuth } from "@/context/AuthContext";
+import { createCheckoutOrder } from "@/services/checkoutService";
 
 function formatPrice(value: number) {
     return new Intl.NumberFormat("en-US", {
@@ -15,16 +18,27 @@ function formatPrice(value: number) {
 export default function CartPage() {
     const { items, cartCount, cartSubtotal, isHydrated, updateQuantity, removeFromCart, clearCart } = useCart();
     const { getCheckoutPayload } = useCart();
+    const { user, isReady } = useAuth();
+    const [isCheckingOut, setIsCheckingOut] = useState(false);
 
     async function handleCheckout() {
-        const payload = {
-            items: getCheckoutPayload(),
-        };
-
-        console.log(payload);
+        if (!user) {
+            window.location.href = "/login";
+            return;
+        }
+        try {
+            setIsCheckingOut(true);
+            const data = await createCheckoutOrder({ items: getCheckoutPayload() });
+            window.location.href = data.initPoint;
+        } catch (error) {
+            console.error("Checkout error:", error);
+            alert("Hubo un error al procesar el pago. Intenta de nuevo.");
+        } finally {
+            setIsCheckingOut(false);
+        }
     }
 
-    if (!isHydrated) {
+    if (!isHydrated || !isReady) {
         return (
             <main className="mx-auto flex w-full max-w-7xl flex-1 flex-col px-4 py-10 sm:px-6 lg:px-8">
                 <div className="rounded-2xl border border-outline-variant bg-surface-container-lowest px-6 py-10 text-center text-on-surface-variant shadow-sm">
@@ -173,17 +187,19 @@ export default function CartPage() {
                     >
                         Continue shopping
                     </Link>
-                    <Link
-                        href="/catalog"
+
+                    <button
+                        type="button"
+                        onClick={handleCheckout}
+                        disabled={isCheckingOut}
                         className="mt-5 inline-flex w-full items-center justify-center rounded-full
-                        bg-green-600 px-5 py-3 text-sm font-semibold text-white
-                        shadow-md transition-all duration-300
-                        hover:bg-green-700 hover:scale-105 hover:shadow-lg"
+                            bg-green-600 px-5 py-3 text-sm font-semibold text-white
+                            shadow-md transition-all duration-300
+                            hover:bg-green-700 hover:scale-105 hover:shadow-lg
+                            disabled:opacity-60 disabled:cursor-not-allowed disabled:scale-100"
                     >
-                        Checkout
-                    </Link>
-
-
+                        {isCheckingOut ? "Procesando..." : "Checkout"}
+                    </button>
                 </aside>
             </div>
         </main>
