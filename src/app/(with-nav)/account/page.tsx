@@ -684,3 +684,36 @@ function ToggleOption({
         </div>
     )
 }
+
+export default function AccountPage() {
+    const router = useRouter()
+    const { user, isReady, updateUser, logout } = useAuth()
+
+    useEffect(() => {
+        if (isReady && !user) {
+            router.replace('/login')
+        }
+    }, [isReady, router, user])
+
+    if (!isReady || !user) {
+        return (
+            <section className="min-h-[calc(100vh-64px)] w-full bg-[radial-gradient(circle_at_top,rgba(0,107,17,0.12),transparent_34%),linear-gradient(180deg,#f5fcee_0%,#edf5e4_100%)]">
+                <div className="mx-auto flex min-h-[calc(100vh-64px)] w-full max-w-7xl items-center justify-center px-4 py-10 sm:px-6 lg:px-8">
+                    <div className="flex items-center gap-3 rounded-2xl border border-outline-variant/70 bg-white/80 px-5 py-4 shadow-sm backdrop-blur">
+                        <div className="h-4 w-4 animate-pulse rounded-full bg-primary" />
+                        <p className="text-sm font-medium text-on-surface-variant">Loading account details...</p>
+                    </div>
+                </div>
+            </section>
+        )
+    }
+
+    return (
+        <AccountProfileForm
+            key={user.email}
+            currentUser={user}
+            updateUser={updateUser}
+            onLogout={logout}
+        />
+    )
+}
