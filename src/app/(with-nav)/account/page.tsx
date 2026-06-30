@@ -628,6 +628,21 @@ function AccountProfileForm({
                                 </div>
                             </section>
                         )}
+
+                        {/* Account Status Card */}
+                        <section className="rounded-[28px] border border-white/70 bg-white/80 p-6 shadow-[0_12px_40px_rgba(15,23,42,0.08)] backdrop-blur sm:p-8">
+                            <div className="flex items-center gap-4">
+                                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-green-100 text-green-600">
+                                    <BadgeCheck size={24} />
+                                </div>
+                                <div className="flex-1">
+                                    <h3 className="font-semibold text-on-surface">Account Status: Active</h3>
+                                    <p className="text-sm text-on-surface-variant">
+                                        Member since {currentUser.createdAt ? new Date(currentUser.createdAt).toLocaleDateString() : 'N/A'}
+                                    </p>
+                                </div>
+                            </div>
+                        </section>
                     </div>
                 </div>
             </div>
