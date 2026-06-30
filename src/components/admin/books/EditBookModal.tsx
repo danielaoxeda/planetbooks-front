@@ -1,21 +1,18 @@
 "use client";
 
 import { useEffect, useState } from "react";
-
 import { Product } from "@/types/product";
-
 import BookForm from "@/components/admin/books/forms/BookForm";
-
-import {
-    BookFormData,
-    validateBookForm,
-} from "@/components/admin/books/forms/BookValidation";
+import {BookFormData, validateBookForm,} from "@/components/admin/books/forms/BookValidation";
 
 interface Props {
     open: boolean;
     onClose: () => void;
     book: Product | null;
-    onSave: (updatedBook: Product) => void;
+    onSave: (
+        updatedBook: Product,
+        imageFile?: File
+    ) => void;
 }
 
 const emptyForm: BookFormData = {
@@ -38,17 +35,21 @@ export default function EditBookModal({
                                           onSave,
                                       }: Props) {
 
-    const [formData, setFormData] = useState<BookFormData>(emptyForm);
+    const [formData, setFormData] =
+        useState<BookFormData>(emptyForm);
 
-    const [errors, setErrors] = useState<Record<string, string>>({});
+    const [errors, setErrors] =
+        useState<Record<string, string>>({});
 
-    const [preview, setPreview] = useState("");
+    const [imageFile, setImageFile] =
+        useState<File | null>(null);
 
     useEffect(() => {
 
         if (!book) return;
 
-        const newForm: BookFormData = {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        setFormData({
             title: book.title ?? "",
             description: book.description ?? "",
             tag: book.tag ?? "",
@@ -61,10 +62,9 @@ export default function EditBookModal({
             price: String(
                 book.items?.[0]?.price ?? ""
             ),
-        };
+        });
 
-        setFormData(newForm);
-        setPreview(book.image ?? "");
+        setImageFile(null);
 
     }, [book]);
 
@@ -73,10 +73,16 @@ export default function EditBookModal({
         value: string
     ) => {
 
-        setFormData(prev => ({...prev, [field]: value,}));
+        setFormData(prev => ({
+            ...prev,
+            [field]: value,
+        }));
 
         if (errors[field]) {
-            setErrors(prev => ({...prev, [field]: "",}));
+            setErrors(prev => ({
+                ...prev,
+                [field]: "",
+            }));
         }
     };
 
@@ -84,21 +90,20 @@ export default function EditBookModal({
         e: React.ChangeEvent<HTMLInputElement>
     ) => {
 
-        const file = e.target.files?.[0];
+        const file =
+            e.target.files?.[0];
+
         if (!file) return;
 
-        const imageUrl = URL.createObjectURL(file);
-        setPreview(imageUrl);
-
-        setFormData(prev => ({...prev, image: imageUrl,}));
+        setImageFile(file);
     };
 
     const handleSubmit = () => {
-        console.log(formData);
 
         if (!book) return;
 
-        const validationErrors = validateBookForm(formData);
+        const validationErrors =
+            validateBookForm(formData);
 
         if (
             Object.keys(validationErrors).length > 0
@@ -112,15 +117,35 @@ export default function EditBookModal({
             ...book,
 
             title: formData.title,
-            description: formData.description,
-            tag: formData.tag,
-            categories: [formData.level,],
-            level: formData.level,
-            pages: formData.pages,
-            format: formData.format,
-            publisher: formData.publisher,
-            language: formData.language,
-            image: formData.image,
+
+            description:
+            formData.description,
+
+            tag:
+            formData.tag,
+
+            categories: [
+                formData.level,
+            ],
+
+            level:
+            formData.level,
+
+            pages:
+            formData.pages,
+
+            format:
+            formData.format,
+
+            publisher:
+            formData.publisher,
+
+            language:
+            formData.language,
+
+            image:
+            formData.image,
+
             items:
                 book.items?.length > 0
                     ? [
@@ -138,12 +163,24 @@ export default function EditBookModal({
                     : [],
         };
 
-        onSave(updatedBook);
+        onSave(
+            updatedBook,
+            imageFile ?? undefined
+        );
     };
 
     if (!open || !book) {
         return null;
     }
+
+    const preview =
+        imageFile
+            ? URL.createObjectURL(imageFile)
+            : (
+                book.image?.startsWith("/uploads")
+                    ? `https://planetbook.solidwebs.com${book.image}`
+                    : book.image
+            );
 
     return (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
@@ -153,6 +190,7 @@ export default function EditBookModal({
                 <div className="flex items-center justify-between mb-6">
 
                     <div>
+
                         <h2 className="text-2xl font-bold">
                             Edit Book
                         </h2>
@@ -160,6 +198,7 @@ export default function EditBookModal({
                         <p className="text-sm text-gray-500">
                             Update book information
                         </p>
+
                     </div>
 
                     <button
