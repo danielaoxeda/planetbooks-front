@@ -140,3 +140,27 @@ function ToastContainer({
         </div>
     )
 }
+
+// Individual Toast Item
+function ToastItem({ toast, onRemove }: { toast: Toast; onRemove: () => void }) {
+    return (
+        <div
+            className={`
+                flex items-start gap-3 p-4 rounded-2xl border shadow-lg backdrop-blur-sm
+                animate-in slide-in-from-right-full fade-in duration-300
+                ${bgMap[toast.type]}
+            `}
+            role="alert"
+        >
+            <div className="flex-shrink-0 mt-0.5">{iconMap[toast.type]}</div>
+            <p className="flex-1 text-sm font-medium text-gray-900">{toast.message}</p>
+            <button
+                onClick={onRemove}
+                className="flex-shrink-0 p-1 rounded-lg hover:bg-black/5 transition-colors"
+                aria-label="Dismiss"
+            >
+                <X size={16} className="text-gray-500" />
+            </button>
+        </div>
+    )
+}
