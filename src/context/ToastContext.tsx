@@ -9,7 +9,6 @@ import {
     X,
 } from 'lucide-react'
 
-// Toast types
 export type ToastType = 'success' | 'error' | 'warning' | 'info'
 
 export interface Toast {
@@ -31,15 +30,12 @@ interface ToastContextType {
 
 const ToastContext = createContext<ToastContextType | undefined>(undefined)
 
-// Default duration in ms
 const DEFAULT_DURATION = 5000
 
-// Generate unique ID
 function generateId(): string {
     return `toast-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
 }
 
-// Icon mapping
 const iconMap: Record<ToastType, ReactNode> = {
     success: <CheckCircle size={20} className="text-green-600" />,
     error: <XCircle size={20} className="text-red-600" />,
@@ -47,7 +43,6 @@ const iconMap: Record<ToastType, ReactNode> = {
     info: <Info size={20} className="text-blue-600" />,
 }
 
-// Background color mapping
 const bgMap: Record<ToastType, string> = {
     success: 'bg-green-50 border-green-200',
     error: 'bg-red-50 border-red-200',
@@ -64,7 +59,6 @@ export function ToastProvider({ children }: { children: ReactNode }) {
 
         setToasts((prev) => [...prev, { ...toast, id }])
 
-        // Auto remove after duration
         if (duration > 0) {
             setTimeout(() => {
                 setToasts((prev) => prev.filter((t) => t.id !== id))
@@ -122,11 +116,10 @@ export function useToast() {
     return context
 }
 
-// Toast Container Component
 function ToastContainer({
-                            toasts,
-                            removeToast,
-                        }: {
+    toasts,
+    removeToast,
+}: {
     toasts: Toast[]
     removeToast: (id: string) => void
 }) {
@@ -141,7 +134,6 @@ function ToastContainer({
     )
 }
 
-// Individual Toast Item
 function ToastItem({ toast, onRemove }: { toast: Toast; onRemove: () => void }) {
     return (
         <div

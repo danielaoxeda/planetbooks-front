@@ -1,40 +1,93 @@
 'use client'
 
 import Link from 'next/link'
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import {
     AlertCircle,
     BadgeCheck,
-    Bell,
     BookOpen,
-    CheckCircle,
-    LogOut,
+    Eye,
+    EyeOff,
     ShieldCheck,
     Sparkles,
     Lock,
     LogOut,
-    Mail,
     User,
 } from 'lucide-react'
 import { useAuth } from '@/context/AuthContext'
 import { useToast } from '@/context/ToastContext'
 import { authService } from '@/services/authService'
-import { User } from '@/types/user'
+import { useFormValidation, createValidationRules } from '@/hooks/useFormValidation'
+import { User as UserType } from '@/types/user'
 
-// Privacy settings
-interface PrivacySettings {
-    showProfile: boolean
-    showOrders: boolean
-    allowAnalytics: boolean
+type ViewMode = 'profile' | 'password'
+
+interface ProfileFormData {
+    name: string
+    email: string
+}
+
+interface PasswordFormData {
+    currentPassword: string
+    newPassword: string
+    confirmPassword: string
+}
+
+function getFriendlyApiError(error: unknown, fallback: string) {
+    if (!error || typeof error !== 'object') return fallback
+
+    const maybeAxiosError = error as {
+        response?: {
+            status?: number
+            data?: {
+                message?: string
+                error?: string
+            }
+        }
+        message?: string
+        code?: string
+    }
+
+    const apiMessage =
+        maybeAxiosError.response?.data?.message ||
+        maybeAxiosError.response?.data?.error
+
+    if (apiMessage) return apiMessage
+
+    if (maybeAxiosError.response?.status === 400) {
+        return 'Please review the highlighted information and try again.'
+    }
+
+    if (maybeAxiosError.response?.status === 401) {
+        return 'Your session expired. Please sign in again.'
+    }
+
+    if (maybeAxiosError.response?.status === 403) {
+        return 'You do not have permission to update this information.'
+    }
+
+    if (maybeAxiosError.response?.status === 409) {
+        return 'That email is already in use by another account.'
+    }
+
+    if (maybeAxiosError.response?.status && maybeAxiosError.response.status >= 500) {
+        return 'The service is temporarily unavailable. Please try again in a moment.'
+    }
+
+    if (maybeAxiosError.code === 'ERR_NETWORK') {
+        return 'We could not connect to PlanetBooks. Check your connection and try again.'
+    }
+
+    return maybeAxiosError.message || fallback
 }
 
 function FormInput({
-                       label,
-                       error,
-                       children,
-                       hint,
-                   }: {
+    label,
+    error,
+    children,
+    hint,
+}: {
     label: string
     error?: string
     children: React.ReactNode
@@ -59,63 +112,28 @@ function FormInput({
     )
 }
 
-type StatusType = 'success' | 'error' | 'info' | null
-
-interface StatusMessage {
-    text: string
-    type: StatusType
-}
-
 function AccountProfileForm({
                                 currentUser,
                                 updateUser,
                                 onLogout,
                             }: {
-    currentUser: User
-    updateUser: (userData: User) => void
+    currentUser: UserType
+    updateUser: (userData: UserType) => void
     onLogout: () => void
 }) {
-    const router = useRouter()
     const toast = useToast()
     const [viewMode, setViewMode] = useState<ViewMode>('profile')
-    const [isEditing, setIsEditing] = useState(false)
-    const [name, setName] = useState(() => currentUser.name || currentUser.email.split('@')[0])
-    const [email, setEmail] = useState(() => currentUser.email)
-    const [currentPassword, setCurrentPassword] = useState('')
-    const [newPassword, setNewPassword] = useState('')
-    const [confirmPassword, setConfirmPassword] = useState('')
-    const [status, setStatus] = useState<StatusMessage>(null)
     const [isSaving, setIsSaving] = useState(false)
-
-    // Password visibility toggles
     const [showCurrentPassword, setShowCurrentPassword] = useState(false)
     const [showNewPassword, setShowNewPassword] = useState(false)
     const [showConfirmPassword, setShowConfirmPassword] = useState(false)
 
-    // Notification preferences state
-    const [notifications, setNotifications] = useState<NotificationPreferences>({
-        emailNotifications: true,
-        orderUpdates: true,
-        promotions: false,
-        newsletter: true,
-    })
-
-    // Privacy settings state
-    const [privacy, setPrivacy] = useState<PrivacySettings>({
-        showProfile: true,
-        showOrders: false,
-        allowAnalytics: true,
-    })
-
     const validation = createValidationRules()
 
-    // Profile form validation
     const profileForm = useFormValidation<ProfileFormData>(
         {
             name: currentUser.name || currentUser.email.split('@')[0],
             email: currentUser.email,
-            phone: '',
-            bio: '',
         },
         {
             name: [
@@ -126,12 +144,9 @@ function AccountProfileForm({
                 validation.required('Email is required'),
                 validation.email('Please enter a valid email'),
             ],
-            phone: [],
-            bio: [],
         }
     )
 
-    // Password form validation
     const passwordForm = useFormValidation<PasswordFormData>(
         {
             currentPassword: '',
@@ -146,10 +161,6 @@ function AccountProfileForm({
             ],
             confirmPassword: [
                 validation.required('Please confirm your password'),
-                validation.match(
-                    passwordForm.values.newPassword,
-                    'Passwords do not match'
-                ),
             ],
         }
     )
@@ -166,161 +177,90 @@ function AccountProfileForm({
         .join('') || displayName.slice(0, 2).toUpperCase()
     const roleLabel = currentUser.role === 'ADMIN' ? 'Administrator' : 'Learner'
 
-    const resetProfileFields = useCallback(() => {
-        setName(currentUser.name || currentUser.email.split('@')[0])
-        setEmail(currentUser.email)
-        setIsEditing(false)
-    }, [currentUser])
-
-    const resetPasswordFields = useCallback(() => {
-        setCurrentPassword('')
-        setNewPassword('')
-        setConfirmPassword('')
-    }, [])
-
-    const clearStatus = useCallback(() => {
-        setStatus(null)
-    }, [])
-
-    const handleCancel = () => {
-        if (viewMode === 'password') {
-            setViewMode('profile')
-            resetPasswordFields()
-            resetProfileFields()
-            clearStatus()
+    const handleSaveProfile = async () => {
+        if (!profileForm.validateAll()) {
+            toast.error('Please review the profile fields before saving.')
             return
         }
 
-        resetProfileFields()
-        setStatus({ text: 'Changes discarded.', type: 'info' })
-    }
-
-    const handleTogglePassword = () => {
-        setViewMode('password')
-        setIsEditing(false)
-        resetProfileFields()
-        resetPasswordFields()
-        setStatus({ text: 'Password form enabled.', type: 'info' })
-    }
-
-    const handleSave = async () => {
         setIsSaving(true)
-        clearStatus()
-
         try {
-            if (viewMode === 'password') {
-                // Password validation
-                if (!currentPassword.trim()) {
-                    setStatus({ text: 'Please enter your current password.', type: 'error' })
-                    setIsSaving(false)
-                    return
-                }
-
-                if (!newPassword.trim()) {
-                    setStatus({ text: 'Please enter a new password.', type: 'error' })
-                    setIsSaving(false)
-                    return
-                }
-
-                if (newPassword.length < 6) {
-                    setStatus({ text: 'New password must be at least 6 characters.', type: 'error' })
-                    setIsSaving(false)
-                    return
-                }
-
-                if (newPassword !== confirmPassword) {
-                    setStatus({ text: 'The new passwords do not match.', type: 'error' })
-                    setIsSaving(false)
-                    return
-                }
-
-                await authService.changePassword(currentUser.id, {
-                    currentPassword: currentPassword.trim(),
-                    newPassword: newPassword.trim(),
-                    confirmPassword: confirmPassword.trim(),
-                })
-
-                setStatus({ text: 'Password updated successfully!', type: 'success' })
-                setViewMode('profile')
-                setIsEditing(false)
-                resetPasswordFields()
-                return
-            }
-            toast.error(message)
-        } finally {
-            setIsSaving(false)
-        }
-    }
-
-            if (!isEditing) {
-                setIsEditing(true)
-                setStatus({ text: 'Fields unlocked for editing.', type: 'info' })
-                return
-            }
-
-            // Profile validation
-            if (!name.trim()) {
-                setStatus({ text: 'Name cannot be empty.', type: 'error' })
-                setIsSaving(false)
-                return
-            }
-
-            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-            if (!emailRegex.test(email.trim())) {
-                setStatus({ text: 'Please enter a valid email address.', type: 'error' })
-                setIsSaving(false)
-                return
-            }
-
             const updatedUser = await authService.updateProfile(currentUser.id, {
-                name: name.trim(),
-                email: email.trim(),
+                name: profileForm.values.name.trim(),
+                email: profileForm.values.email.trim(),
             })
-
             updateUser(updatedUser)
-            setStatus({ text: 'Profile updated successfully!', type: 'success' })
-            setIsEditing(false)
+            toast.success('Profile updated successfully!')
+            profileForm.reset({
+                ...profileForm.values,
+                name: updatedUser.name,
+                email: updatedUser.email,
+            })
         } catch (error: unknown) {
-            console.error('Error saving profile:', error)
-            let errorMessage = 'Unable to update profile. Please try again.'
-
-            if (error && typeof error === 'object' && 'response' in error) {
-                const axiosError = error as { response?: { data?: { message?: string } } }
-                if (axiosError.response?.data?.message) {
-                    errorMessage = axiosError.response.data.message
-                } else if (axiosError.response?.status === 401) {
-                    errorMessage = 'Your session may have expired. Please log in again.'
-                } else if (axiosError.response?.status === 400) {
-                    errorMessage = 'Invalid data. Please check your input.'
-                }
-            }
-
-            setStatus({ text: errorMessage, type: 'error' })
+            console.error('Error updating profile:', error)
+            toast.error(
+                getFriendlyApiError(
+                    error,
+                    'Unable to update your profile. Please try again.'
+                )
+            )
         } finally {
             setIsSaving(false)
         }
     }
 
-    const getStatusIcon = () => {
-        if (!status) return null
-        if (status.type === 'success') return <CheckCircle size={16} className="text-green-600" />
-        if (status.type === 'error') return <AlertCircle size={16} className="text-red-600" />
-        return <AlertCircle size={16} className="text-blue-600" />
+    const handleSavePassword = async () => {
+        if (!passwordForm.validateAll()) {
+            toast.error('Please review the password fields before saving.')
+            return
+        }
+
+        if (passwordForm.values.newPassword !== passwordForm.values.confirmPassword) {
+            passwordForm.setErrors((prev) => ({
+                ...prev,
+                confirmPassword: 'Passwords do not match',
+            }))
+            toast.error('The password confirmation does not match.')
+            return
+        }
+
+        setIsSaving(true)
+        try {
+            await authService.changePassword(currentUser.id, {
+                currentPassword: passwordForm.values.currentPassword,
+                newPassword: passwordForm.values.newPassword,
+                confirmPassword: passwordForm.values.confirmPassword,
+            })
+            toast.success('Password changed successfully!')
+            passwordForm.reset({
+                currentPassword: '',
+                newPassword: '',
+                confirmPassword: '',
+            })
+            setViewMode('profile')
+        } catch (error: unknown) {
+            console.error('Error changing password:', error)
+            toast.error(
+                getFriendlyApiError(
+                    error,
+                    'Unable to change your password. Please check your current password.'
+                )
+            )
+        } finally {
+            setIsSaving(false)
+        }
     }
 
-    const getStatusClass = () => {
-        if (!status) return ''
-        if (status.type === 'success') return 'bg-green-50 border-green-200 text-green-800'
-        if (status.type === 'error') return 'bg-red-50 border-red-200 text-red-800'
-        return 'bg-blue-50 border-blue-200 text-blue-800'
-    }
+    const navItems = [
+        { id: 'profile', label: 'Profile', icon: User },
+        { id: 'password', label: 'Password', icon: Lock },
+    ] as const
 
     return (
         <section className="relative w-full overflow-hidden bg-[radial-gradient(circle_at_top_left,rgba(0,107,17,0.14),transparent_30%),radial-gradient(circle_at_top_right,rgba(0,136,24,0.12),transparent_28%),linear-gradient(180deg,#f5fcee_0%,#edf5e4_55%,#f8fafc_100%)]">
             <div className="absolute inset-x-0 top-0 h-56 bg-[linear-gradient(180deg,rgba(0,107,17,0.14),transparent)]" />
 
             <div className="relative mx-auto flex w-full max-w-7xl flex-col gap-6 px-4 py-6 sm:px-6 lg:px-8 lg:py-10">
-                {/* Header Card */}
                 <div className="overflow-hidden rounded-[28px] border border-white/60 bg-[#006b11] shadow-[0_20px_80px_rgba(0,107,17,0.22)]">
                     <div className="grid min-h-60 gap-8 p-6 text-white md:grid-cols-[auto_1fr] md:items-end md:p-8 lg:p-10">
                         <div className="flex items-center gap-5">
@@ -328,12 +268,6 @@ function AccountProfileForm({
                                 <div className="flex h-28 w-28 items-center justify-center rounded-full border border-white/25 bg-white/10 text-3xl font-bold tracking-tight text-white shadow-2xl backdrop-blur">
                                     {initials}
                                 </div>
-                                <button
-                                    className="absolute -bottom-1 -right-1 flex h-8 w-8 items-center justify-center rounded-full bg-white text-primary shadow-lg hover:bg-gray-100 transition-colors"
-                                    title="Change avatar"
-                                >
-                                    <User size={14} />
-                                </button>
                             </div>
 
                             <div className="max-w-xl space-y-2">
@@ -366,38 +300,29 @@ function AccountProfileForm({
                 </div>
 
                 <div className="grid gap-6 lg:grid-cols-[280px_1fr] lg:items-start">
-                    {/* Sidebar Navigation */}
                     <aside className="rounded-[28px] border border-white/70 bg-white/80 p-5 shadow-[0_12px_40px_rgba(15,23,42,0.08)] backdrop-blur sm:p-6 lg:sticky lg:top-24">
                         <div className="rounded-2xl bg-surface-container-low px-4 py-4">
                             <p className="text-xs font-semibold uppercase tracking-[0.24em] text-primary">Settings</p>
                             <p className="mt-1 text-sm text-on-surface-variant">Manage your account.</p>
                         </div>
 
-                        <button
-                            type="button"
-                            onClick={() => {
-                                setViewMode('profile')
-                                resetPasswordFields()
-                                clearStatus()
-                            }}
-                            className={`mt-4 inline-flex w-full items-center justify-center gap-2 rounded-2xl px-4 py-3 text-sm font-semibold transition-colors ${viewMode === 'profile'
-                                ? 'bg-primary text-white shadow-sm'
-                                : 'border border-outline-variant/70 bg-surface-container-low text-on-surface-variant hover:bg-surface-container-high'
-                            }`}
-                        >
-                            Profile
-                        </button>
-
-                        <button
-                            type="button"
-                            onClick={handleTogglePassword}
-                            className={`mt-3 inline-flex w-full items-center justify-center gap-2 rounded-2xl px-4 py-3 text-sm font-semibold transition-colors ${viewMode === 'password'
-                                ? 'bg-primary text-white shadow-sm'
-                                : 'border border-primary text-primary hover:bg-primary/5'
-                            }`}
-                        >
-                            Change password
-                        </button>
+                        <nav className="mt-4 space-y-2">
+                            {navItems.map((item) => (
+                                <button
+                                    key={item.id}
+                                    type="button"
+                                    onClick={() => setViewMode(item.id)}
+                                    className={`w-full inline-flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-semibold transition-colors ${
+                                        viewMode === item.id
+                                            ? 'bg-primary text-white shadow-sm'
+                                            : 'border border-outline-variant/70 bg-surface-container-low text-on-surface-variant hover:bg-surface-container-high'
+                                    }`}
+                                >
+                                    <item.icon size={18} />
+                                    {item.label}
+                                </button>
+                            ))}
+                        </nav>
 
                         <button
                             type="button"
@@ -409,9 +334,7 @@ function AccountProfileForm({
                         </button>
                     </aside>
 
-                    {/* Content Area */}
                     <div className="grid gap-6">
-                        {/* Profile Section */}
                         {viewMode === 'profile' && (
                             <section className="rounded-[28px] border border-white/70 bg-white/80 p-6 shadow-[0_12px_40px_rgba(15,23,42,0.08)] backdrop-blur sm:p-8">
                                 <div className="mb-6">
@@ -422,44 +345,55 @@ function AccountProfileForm({
                                     </p>
                                 </div>
 
-                                <div className="rounded-2xl border border-outline-variant/60 bg-surface-container-low px-4 py-3 text-sm text-on-surface-variant">
-                                    Account status: <span className="font-semibold text-primary">{currentUser.enabled ? 'Active' : 'Inactive'}</span>
+                                <div className="grid gap-6 md:grid-cols-2">
+                                    <FormInput label="Full Name" error={profileForm.errors.name}>
+                                        <input
+                                            type="text"
+                                            {...profileForm.getFieldProps('name')}
+                                            className="rounded-2xl border border-outline-variant/60 bg-surface-container-lowest px-4 py-3 text-sm text-on-surface outline-none transition-colors placeholder:text-on-surface-variant/60 focus:border-primary disabled:bg-surface-container-low disabled:text-on-surface-variant disabled:cursor-not-allowed"
+                                        />
+                                    </FormInput>
+
+                                    <FormInput label="Email Address" error={profileForm.errors.email}>
+                                        <input
+                                            type="email"
+                                            {...profileForm.getFieldProps('email')}
+                                            className="rounded-2xl border border-outline-variant/60 bg-surface-container-lowest px-4 py-3 text-sm text-on-surface outline-none transition-colors placeholder:text-on-surface-variant/60 focus:border-primary"
+                                        />
+                                    </FormInput>
                                 </div>
 
-                            <div className="mt-6 grid gap-4">
-                                {viewMode === 'password' ? (
-                                    <>
-                                        <label className="grid gap-2">
-                                            <span className="text-xs font-semibold uppercase tracking-[0.2em] text-on-surface-variant">Current password</span>
-                                            <input
-                                                type="password"
-                                                value={currentPassword}
-                                                onChange={(event) => setCurrentPassword(event.target.value)}
-                                                placeholder="Enter your current password"
-                                                className="rounded-2xl border border-outline-variant/60 bg-surface-container-lowest px-4 py-3 text-sm text-on-surface outline-none transition-colors placeholder:text-on-surface-variant/60 focus:border-primary"
-                                            />
-                                        </label>
+                                <div className="mt-6 flex justify-end">
+                                    <button
+                                        type="button"
+                                        onClick={handleSaveProfile}
+                                        disabled={isSaving}
+                                        className="rounded-2xl bg-primary px-6 py-3 text-sm font-semibold text-white shadow-sm transition-transform hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-70"
+                                    >
+                                        {isSaving ? 'Saving...' : 'Save Changes'}
+                                    </button>
+                                </div>
+                            </section>
+                        )}
 
-                                        <label className="grid gap-2">
-                                            <span className="text-xs font-semibold uppercase tracking-[0.2em] text-on-surface-variant">New password</span>
-                                            <input
-                                                type="password"
-                                                value={newPassword}
-                                                onChange={(event) => setNewPassword(event.target.value)}
-                                                placeholder="Enter new password (min. 6 characters)"
-                                                className="rounded-2xl border border-outline-variant/60 bg-surface-container-lowest px-4 py-3 text-sm text-on-surface outline-none transition-colors placeholder:text-on-surface-variant/60 focus:border-primary"
-                                            />
-                                        </label>
+                        {viewMode === 'password' && (
+                            <section className="rounded-[28px] border border-white/70 bg-white/80 p-6 shadow-[0_12px_40px_rgba(15,23,42,0.08)] backdrop-blur sm:p-8">
+                                <div className="mb-6">
+                                    <p className="text-xs font-semibold uppercase tracking-[0.24em] text-primary">Security</p>
+                                    <h2 className="mt-2 text-2xl font-bold tracking-tight text-on-surface">Change Password</h2>
+                                    <p className="mt-2 text-sm text-on-surface-variant">
+                                        Ensure your account stays secure by using a strong password.
+                                    </p>
+                                </div>
 
                                 <div className="grid gap-6 max-w-lg">
                                     <FormInput label="Current Password" error={passwordForm.errors.currentPassword}>
                                         <div className="relative">
                                             <input
-                                                type="password"
-                                                value={confirmPassword}
-                                                onChange={(event) => setConfirmPassword(event.target.value)}
-                                                placeholder="Confirm your new password"
-                                                className="rounded-2xl border border-outline-variant/60 bg-surface-container-lowest px-4 py-3 text-sm text-on-surface outline-none transition-colors placeholder:text-on-surface-variant/60 focus:border-primary"
+                                                type={showCurrentPassword ? 'text' : 'password'}
+                                                {...passwordForm.getFieldProps('currentPassword')}
+                                                placeholder="Enter current password"
+                                                className="w-full rounded-2xl border border-outline-variant/60 bg-surface-container-lowest px-4 py-3 pr-10 text-sm text-on-surface outline-none transition-colors placeholder:text-on-surface-variant/60 focus:border-primary"
                                             />
                                             <button
                                                 type="button"
@@ -501,156 +435,40 @@ function AccountProfileForm({
                                                 placeholder="Confirm new password"
                                                 className="w-full rounded-2xl border border-outline-variant/60 bg-surface-container-lowest px-4 py-3 pr-10 text-sm text-on-surface outline-none transition-colors placeholder:text-on-surface-variant/60 focus:border-primary"
                                             />
-                                        </label>
-                                    </div>
-                                )}
-
-                                <div className="flex flex-col gap-3 pt-2 sm:flex-row sm:items-center sm:justify-end">
-                                    <div className="flex flex-wrap gap-3">
-                                        <button
-                                            type="button"
-                                            onClick={handleCancel}
-                                            className="rounded-2xl px-5 py-3 text-sm font-semibold text-on-surface-variant transition-colors hover:bg-surface-container-low"
-                                        >
-                                            Cancel changes
-                                        </button>
-                                        <button
-                                            type="button"
-                                            onClick={handleSave}
-                                            disabled={isSaving}
-                                            className="rounded-2xl bg-primary px-5 py-3 text-sm font-semibold text-white shadow-sm transition-transform hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-70"
-                                        >
-                                            {isSaving ? 'Saving...' : viewMode === 'password' ? 'Update Password' : isEditing ? 'Save Changes' : 'Edit Profile'}
-                                        </button>
-                                    </div>
-                                </div>
-
-                                {status ? (
-                                    <div className={`flex items-center gap-2 rounded-2xl border px-4 py-3 text-sm font-medium ${getStatusClass()}`}>
-                                        {getStatusIcon()}
-                                        {status.text}
-                                    </div>
-                                ) : null}
-                            </div>
-                        </section>
-
-                                <div className="space-y-4">
-                                    <ToggleOption
-                                        title="Email Notifications"
-                                        description="Receive notifications via email"
-                                        checked={notifications.emailNotifications}
-                                        onChange={(checked) =>
-                                            setNotifications((prev) => ({ ...prev, emailNotifications: checked }))
-                                        }
-                                    />
-                                    <ToggleOption
-                                        title="Order Updates"
-                                        description="Get updates about your orders and shipments"
-                                        checked={notifications.orderUpdates}
-                                        onChange={(checked) =>
-                                            setNotifications((prev) => ({ ...prev, orderUpdates: checked }))
-                                        }
-                                    />
-                                    <ToggleOption
-                                        title="Promotions & Offers"
-                                        description="Receive promotional emails about deals and offers"
-                                        checked={notifications.promotions}
-                                        onChange={(checked) =>
-                                            setNotifications((prev) => ({ ...prev, promotions: checked }))
-                                        }
-                                    />
-                                    <ToggleOption
-                                        title="Newsletter"
-                                        description="Weekly digest and new book announcements"
-                                        checked={notifications.newsletter}
-                                        onChange={(checked) =>
-                                            setNotifications((prev) => ({ ...prev, newsletter: checked }))
-                                        }
-                                    />
+                                            <button
+                                                type="button"
+                                                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                                                className="absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant hover:text-on-surface"
+                                            >
+                                                {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                                            </button>
+                                        </div>
+                                    </FormInput>
                                 </div>
 
                                 <div className="mt-6 flex justify-end">
                                     <button
                                         type="button"
-                                        onClick={handleSaveNotifications}
+                                        onClick={handleSavePassword}
                                         disabled={isSaving}
                                         className="rounded-2xl bg-primary px-6 py-3 text-sm font-semibold text-white shadow-sm transition-transform hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-70"
                                     >
-                                        {isSaving ? 'Saving...' : 'Save Preferences'}
+                                        {isSaving ? 'Updating...' : 'Update Password'}
                                     </button>
                                 </div>
                             </section>
                         )}
 
-                        {/* Privacy Section */}
-                        {viewMode === 'privacy' && (
-                            <section className="rounded-[28px] border border-white/70 bg-white/80 p-6 shadow-[0_12px_40px_rgba(15,23,42,0.08)] backdrop-blur sm:p-8">
-                                <div className="mb-6">
-                                    <p className="text-xs font-semibold uppercase tracking-[0.24em] text-primary">Security</p>
-                                    <h2 className="mt-2 text-2xl font-bold tracking-tight text-on-surface">Privacy Settings</h2>
-                                    <p className="mt-2 text-sm text-on-surface-variant">
-                                        Control who can see your information.
+                        <section className="rounded-[28px] border border-white/70 bg-white/80 p-6 shadow-[0_12px_40px_rgba(15,23,42,0.08)] backdrop-blur sm:p-8">
+                            <div className="flex items-center gap-4">
+                                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-green-100 text-green-600">
+                                    <BadgeCheck size={24} />
+                                </div>
+                                <div className="flex-1">
+                                    <h3 className="font-semibold text-on-surface">Account Status: Active</h3>
+                                    <p className="text-sm text-on-surface-variant">
+                                        Member since {currentUser.createdAt ? new Date(currentUser.createdAt).toLocaleDateString() : 'N/A'}
                                     </p>
-                                </div>
-
-                                <div className="space-y-4">
-                                    <ToggleOption
-                                        title="Public Profile"
-                                        description="Allow others to see your profile information"
-                                        checked={privacy.showProfile}
-                                        onChange={(checked) =>
-                                            setPrivacy((prev) => ({ ...prev, showProfile: checked }))
-                                        }
-                                    />
-                                    <ToggleOption
-                                        title="Order History"
-                                        description="Allow others to see your order history"
-                                        checked={privacy.showOrders}
-                                        onChange={(checked) =>
-                                            setPrivacy((prev) => ({ ...prev, showOrders: checked }))
-                                        }
-                                    />
-                                    <ToggleOption
-                                        title="Analytics"
-                                        description="Help us improve by sharing usage data"
-                                        checked={privacy.allowAnalytics}
-                                        onChange={(checked) =>
-                                            setPrivacy((prev) => ({ ...prev, allowAnalytics: checked }))
-                                        }
-                                    />
-                                </div>
-
-                                <div className="mt-8 rounded-2xl bg-surface-container-low p-6">
-                                    <div className="flex items-start gap-4">
-                                        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-primary">
-                                            <ShieldCheck size={18} />
-                                        </div>
-                                        <div>
-                                            <h3 className="font-semibold text-on-surface">Your Data is Protected</h3>
-                                            <p className="mt-1 text-sm text-on-surface-variant">
-                                                We take your privacy seriously. Your personal data is encrypted and
-                                                never shared with third parties without your consent.
-                                            </p>
-                                        </div>
-                                    </div>
-                                </div>
-
-                            <div id="membership" className="rounded-[28px] border border-white/70 bg-[#006b11] p-6 text-white shadow-[0_12px_40px_rgba(15,23,42,0.12)] sm:p-8">
-                                <p className="text-xs font-semibold uppercase tracking-[0.24em] text-white/75">Membership</p>
-                                <h3 className="mt-2 text-2xl font-bold tracking-tight">Your access plan</h3>
-                                <p className="mt-3 max-w-md text-sm leading-6 text-white/85">
-                                    Review your current plan details and account status here.
-                                </p>
-
-                                <div className="mt-6 grid gap-4 sm:grid-cols-2">
-                                    <div className="rounded-2xl bg-white/10 p-4 ring-1 ring-inset ring-white/15">
-                                        <p className="text-xs uppercase tracking-[0.2em] text-white/70">Plan</p>
-                                        <p className="mt-2 text-lg font-semibold">{currentUser.role === 'ADMIN' ? 'Administrator' : 'Learner'}</p>
-                                    </div>
-                                    <div className="rounded-2xl bg-white/10 p-4 ring-1 ring-inset ring-white/15">
-                                        <p className="text-xs uppercase tracking-[0.2em] text-white/70">Status</p>
-                                        <p className="mt-2 text-lg font-semibold">{currentUser.enabled ? 'Active' : 'Inactive'}</p>
-                                    </div>
                                 </div>
                             </div>
                         </section>
@@ -658,41 +476,6 @@ function AccountProfileForm({
                 </div>
             </div>
         </section>
-    )
-}
-
-// Toggle Option Component
-function ToggleOption({
-                          title,
-                          description,
-                          checked,
-                          onChange,
-                      }: {
-    title: string
-    description: string
-    checked: boolean
-    onChange: (checked: boolean) => void
-}) {
-    return (
-        <div className="flex items-center justify-between rounded-2xl border border-outline-variant/60 bg-surface-container-low p-4">
-            <div className="flex-1">
-                <h4 className="font-semibold text-on-surface">{title}</h4>
-                <p className="text-sm text-on-surface-variant">{description}</p>
-            </div>
-            <button
-                type="button"
-                onClick={() => onChange(!checked)}
-                className={`relative ml-4 inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                    checked ? 'bg-primary' : 'bg-gray-300'
-                }`}
-            >
-                <span
-                    className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${
-                        checked ? 'translate-x-6' : 'translate-x-1'
-                    }`}
-                />
-            </button>
-        </div>
     )
 }
 
