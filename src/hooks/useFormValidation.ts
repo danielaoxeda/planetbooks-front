@@ -117,3 +117,11 @@ export function useFormValidation<T extends Record<string, unknown>>(
         isValid,
     }
 }
+
+// Common validation rules
+export const ValidationPatterns = {
+    email: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+    phone: /^[+]?[(]?[0-9]{1,4}[)]?[-\s./0-9]*$/,
+    url: /^https?:\/\/.+/,
+    password: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/,
+}
