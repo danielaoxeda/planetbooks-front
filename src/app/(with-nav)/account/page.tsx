@@ -4,130 +4,257 @@ import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import {
+    AlertCircle,
     BadgeCheck,
     BookOpen,
-    LogOut,
+    Eye,
+    EyeOff,
     ShieldCheck,
     Sparkles,
+    Lock,
+    LogOut,
+    User,
 } from 'lucide-react'
 import { useAuth } from '@/context/AuthContext'
+import { useToast } from '@/context/ToastContext'
 import { authService } from '@/services/authService'
-
-type AccountUser = {
-    name: string
-    email: string
-    role: 'ADMIN' | 'USER'
-}
+import { useFormValidation, createValidationRules } from '@/hooks/useFormValidation'
+import { User as UserType } from '@/types/user'
 
 type ViewMode = 'profile' | 'password'
+
+interface ProfileFormData {
+    name: string
+    email: string
+}
+
+interface PasswordFormData {
+    currentPassword: string
+    newPassword: string
+    confirmPassword: string
+}
+
+function getFriendlyApiError(error: unknown, fallback: string) {
+    if (!error || typeof error !== 'object') return fallback
+
+    const maybeAxiosError = error as {
+        response?: {
+            status?: number
+            data?: {
+                message?: string
+                error?: string
+            }
+        }
+        message?: string
+        code?: string
+    }
+
+    const apiMessage =
+        maybeAxiosError.response?.data?.message ||
+        maybeAxiosError.response?.data?.error
+
+    if (apiMessage) return apiMessage
+
+    if (maybeAxiosError.response?.status === 400) {
+        return 'Please review the highlighted information and try again.'
+    }
+
+    if (maybeAxiosError.response?.status === 401) {
+        return 'Your session expired. Please sign in again.'
+    }
+
+    if (maybeAxiosError.response?.status === 403) {
+        return 'You do not have permission to update this information.'
+    }
+
+    if (maybeAxiosError.response?.status === 409) {
+        return 'That email is already in use by another account.'
+    }
+
+    if (maybeAxiosError.response?.status && maybeAxiosError.response.status >= 500) {
+        return 'The service is temporarily unavailable. Please try again in a moment.'
+    }
+
+    if (maybeAxiosError.code === 'ERR_NETWORK') {
+        return 'We could not connect to PlanetBooks. Check your connection and try again.'
+    }
+
+    return maybeAxiosError.message || fallback
+}
+
+function FormInput({
+    label,
+    error,
+    children,
+    hint,
+}: {
+    label: string
+    error?: string
+    children: React.ReactNode
+    hint?: string
+}) {
+    return (
+        <div className="grid gap-2">
+            <div className="flex items-center justify-between">
+                <label className="text-xs font-semibold uppercase tracking-[0.2em] text-on-surface-variant">
+                    {label}
+                </label>
+                {hint && <span className="text-xs text-on-surface-variant/60">{hint}</span>}
+            </div>
+            {children}
+            {error && (
+                <p className="text-xs text-red-600 flex items-center gap-1">
+                    <AlertCircle size={12} />
+                    {error}
+                </p>
+            )}
+        </div>
+    )
+}
 
 function AccountProfileForm({
                                 currentUser,
                                 updateUser,
                                 onLogout,
                             }: {
-    currentUser: AccountUser
-    updateUser: (userData: AccountUser) => void
+    currentUser: UserType
+    updateUser: (userData: UserType) => void
     onLogout: () => void
 }) {
+    const toast = useToast()
     const [viewMode, setViewMode] = useState<ViewMode>('profile')
-    const [isEditing, setIsEditing] = useState(false)
-    const [name, setName] = useState(() => currentUser.name || currentUser.email.split('@')[0])
-    const [email, setEmail] = useState(() => currentUser.email)
-    const [newPassword, setNewPassword] = useState('')
-    const [confirmPassword, setConfirmPassword] = useState('')
-    const [statusMessage, setStatusMessage] = useState<string | null>(null)
     const [isSaving, setIsSaving] = useState(false)
+    const [showCurrentPassword, setShowCurrentPassword] = useState(false)
+    const [showNewPassword, setShowNewPassword] = useState(false)
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false)
 
-    const displayName = name.trim() || currentUser.name || currentUser.email.split('@')[0]
+    const validation = createValidationRules()
+
+    const profileForm = useFormValidation<ProfileFormData>(
+        {
+            name: currentUser.name || currentUser.email.split('@')[0],
+            email: currentUser.email,
+        },
+        {
+            name: [
+                validation.required('Name is required'),
+                validation.minLength(2, 'Name must be at least 2 characters'),
+            ],
+            email: [
+                validation.required('Email is required'),
+                validation.email('Please enter a valid email'),
+            ],
+        }
+    )
+
+    const passwordForm = useFormValidation<PasswordFormData>(
+        {
+            currentPassword: '',
+            newPassword: '',
+            confirmPassword: '',
+        },
+        {
+            currentPassword: [validation.required('Current password is required')],
+            newPassword: [
+                validation.required('New password is required'),
+                validation.passwordMinLength(6, 'Password must be at least 6 characters'),
+            ],
+            confirmPassword: [
+                validation.required('Please confirm your password'),
+            ],
+        }
+    )
+
+    const displayName =
+        profileForm.values.name.trim() ||
+        currentUser.name ||
+        currentUser.email.split('@')[0]
     const initials = displayName
         .split(' ')
         .filter(Boolean)
         .slice(0, 2)
         .map((part) => part[0]?.toUpperCase())
         .join('') || displayName.slice(0, 2).toUpperCase()
-    const roleLabel = currentUser.role === 'ADMIN' ? 'Administrator access' : 'Learner access'
+    const roleLabel = currentUser.role === 'ADMIN' ? 'Administrator' : 'Learner'
 
-    const resetProfileFields = () => {
-        setName(currentUser.name || currentUser.email.split('@')[0])
-        setEmail(currentUser.email)
-        setIsEditing(false)
-    }
-
-    const resetPasswordFields = () => {
-        setNewPassword('')
-        setConfirmPassword('')
-    }
-
-    const handleCancel = () => {
-        if (viewMode === 'password') {
-            setViewMode('profile')
-            resetPasswordFields()
-            resetProfileFields()
-            setStatusMessage(null)
+    const handleSaveProfile = async () => {
+        if (!profileForm.validateAll()) {
+            toast.error('Please review the profile fields before saving.')
             return
         }
 
-        resetProfileFields()
-        setStatusMessage('Changes discarded.')
-    }
-
-    const handleTogglePassword = () => {
-        setViewMode('password')
-        setIsEditing(false)
-        resetProfileFields()
-        resetPasswordFields()
-        setStatusMessage('Password form enabled.')
-    }
-
-    const handleSave = async () => {
         setIsSaving(true)
-
         try {
-            if (viewMode === 'password') {
-                if (!newPassword.trim() || !confirmPassword.trim()) {
-                    setStatusMessage('Please complete all password fields.')
-                    return
-                }
-
-                if (newPassword !== confirmPassword) {
-                    setStatusMessage('The new passwords do not match.')
-                    return
-                }
-
-                const updatedUser = await authService.changePassword(currentUser.email, {
-                    newPassword: newPassword.trim(),
-                })
-
-                updateUser(updatedUser)
-                setStatusMessage('Password updated successfully.')
-                setViewMode('profile')
-                setIsEditing(false)
-                resetPasswordFields()
-                return
-            }
-
-            if (!isEditing) {
-                setIsEditing(true)
-                setStatusMessage('Fields unlocked for editing.')
-                return
-            }
-
-            const updatedUser = await authService.updateProfile(currentUser.email, {
-                name: name.trim() || currentUser.name,
-                email: email.trim(),
+            const updatedUser = await authService.updateProfile(currentUser.id, {
+                name: profileForm.values.name.trim(),
+                email: profileForm.values.email.trim(),
             })
-
             updateUser(updatedUser)
-            setStatusMessage('Profile updated successfully.')
-            setIsEditing(false)
-        } catch (error) {
-            const message = error instanceof Error ? error.message : 'Unable to update profile.'
-            setStatusMessage(message)
+            toast.success('Profile updated successfully!')
+            profileForm.reset({
+                ...profileForm.values,
+                name: updatedUser.name,
+                email: updatedUser.email,
+            })
+        } catch (error: unknown) {
+            console.error('Error updating profile:', error)
+            toast.error(
+                getFriendlyApiError(
+                    error,
+                    'Unable to update your profile. Please try again.'
+                )
+            )
         } finally {
             setIsSaving(false)
         }
     }
+
+    const handleSavePassword = async () => {
+        if (!passwordForm.validateAll()) {
+            toast.error('Please review the password fields before saving.')
+            return
+        }
+
+        if (passwordForm.values.newPassword !== passwordForm.values.confirmPassword) {
+            passwordForm.setErrors((prev) => ({
+                ...prev,
+                confirmPassword: 'Passwords do not match',
+            }))
+            toast.error('The password confirmation does not match.')
+            return
+        }
+
+        setIsSaving(true)
+        try {
+            await authService.changePassword(currentUser.id, {
+                currentPassword: passwordForm.values.currentPassword,
+                newPassword: passwordForm.values.newPassword,
+                confirmPassword: passwordForm.values.confirmPassword,
+            })
+            toast.success('Password changed successfully!')
+            passwordForm.reset({
+                currentPassword: '',
+                newPassword: '',
+                confirmPassword: '',
+            })
+            setViewMode('profile')
+        } catch (error: unknown) {
+            console.error('Error changing password:', error)
+            toast.error(
+                getFriendlyApiError(
+                    error,
+                    'Unable to change your password. Please check your current password.'
+                )
+            )
+        } finally {
+            setIsSaving(false)
+        }
+    }
+
+    const navItems = [
+        { id: 'profile', label: 'Profile', icon: User },
+        { id: 'password', label: 'Password', icon: Lock },
+    ] as const
 
     return (
         <section className="relative w-full overflow-hidden bg-[radial-gradient(circle_at_top_left,rgba(0,107,17,0.14),transparent_30%),radial-gradient(circle_at_top_right,rgba(0,136,24,0.12),transparent_28%),linear-gradient(180deg,#f5fcee_0%,#edf5e4_55%,#f8fafc_100%)]">
@@ -175,36 +302,32 @@ function AccountProfileForm({
                 <div className="grid gap-6 lg:grid-cols-[280px_1fr] lg:items-start">
                     <aside className="rounded-[28px] border border-white/70 bg-white/80 p-5 shadow-[0_12px_40px_rgba(15,23,42,0.08)] backdrop-blur sm:p-6 lg:sticky lg:top-24">
                         <div className="rounded-2xl bg-surface-container-low px-4 py-4">
-                            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-primary">Session</p>
-                            <p className="mt-1 text-sm text-on-surface-variant">Manage your access from here.</p>
+                            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-primary">Settings</p>
+                            <p className="mt-1 text-sm text-on-surface-variant">Manage your account.</p>
                         </div>
 
-                        <button
-                            type="button"
-                            onClick={() => setViewMode('profile')}
-                            className={`mt-4 inline-flex w-full items-center justify-center gap-2 rounded-2xl px-4 py-3 text-sm font-semibold transition-colors ${viewMode === 'profile'
-                                ? 'bg-primary text-white shadow-sm'
-                                : 'border border-outline-variant/70 bg-surface-container-low text-on-surface-variant hover:bg-surface-container-high'
-                            }`}
-                        >
-                            Profile
-                        </button>
-
-                        <button
-                            type="button"
-                            onClick={handleTogglePassword}
-                            className={`mt-3 inline-flex w-full items-center justify-center gap-2 rounded-2xl px-4 py-3 text-sm font-semibold transition-colors ${viewMode === 'password'
-                                ? 'bg-primary text-white shadow-sm'
-                                : 'border border-primary text-primary hover:bg-primary/5'
-                            }`}
-                        >
-                            Change password
-                        </button>
+                        <nav className="mt-4 space-y-2">
+                            {navItems.map((item) => (
+                                <button
+                                    key={item.id}
+                                    type="button"
+                                    onClick={() => setViewMode(item.id)}
+                                    className={`w-full inline-flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-semibold transition-colors ${
+                                        viewMode === item.id
+                                            ? 'bg-primary text-white shadow-sm'
+                                            : 'border border-outline-variant/70 bg-surface-container-low text-on-surface-variant hover:bg-surface-container-high'
+                                    }`}
+                                >
+                                    <item.icon size={18} />
+                                    {item.label}
+                                </button>
+                            ))}
+                        </nav>
 
                         <button
                             type="button"
                             onClick={onLogout}
-                            className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-error/20 bg-error/5 px-4 py-3 text-sm font-semibold text-error transition-colors hover:bg-error/10"
+                            className="mt-6 w-full inline-flex items-center justify-center gap-2 rounded-2xl border border-error/20 bg-error/5 px-4 py-3 text-sm font-semibold text-error transition-colors hover:bg-error/10"
                         >
                             <LogOut size={16} />
                             Sign out
@@ -212,148 +335,140 @@ function AccountProfileForm({
                     </aside>
 
                     <div className="grid gap-6">
-                        <section
-                            id="personal-info"
-                            className="rounded-[28px] border border-white/70 bg-white/80 p-6 shadow-[0_12px_40px_rgba(15,23,42,0.08)] backdrop-blur sm:p-8"
-                        >
-                            <div className="flex flex-wrap items-start justify-between gap-4">
-                                <div>
-                                    <p className="text-xs font-semibold uppercase tracking-[0.24em] text-primary">
-                                        {viewMode === 'password' ? 'Password' : 'Personal Info'}
-                                    </p>
-                                    <h2 className="mt-2 text-2xl font-bold tracking-tight text-on-surface">
-                                        {viewMode === 'password' ? 'Change your password' : 'Edit your profile'}
-                                    </h2>
-                                    <p className="mt-2 max-w-2xl text-sm leading-6 text-on-surface-variant">
-                                        {viewMode === 'password'
-                                            ? 'Enter the new password twice to confirm the change.'
-                                            : 'Update the basic information associated with your account.'}
+                        {viewMode === 'profile' && (
+                            <section className="rounded-[28px] border border-white/70 bg-white/80 p-6 shadow-[0_12px_40px_rgba(15,23,42,0.08)] backdrop-blur sm:p-8">
+                                <div className="mb-6">
+                                    <p className="text-xs font-semibold uppercase tracking-[0.24em] text-primary">Personal Information</p>
+                                    <h2 className="mt-2 text-2xl font-bold tracking-tight text-on-surface">Edit your profile</h2>
+                                    <p className="mt-2 text-sm text-on-surface-variant">
+                                        Update your personal information and how others see you.
                                     </p>
                                 </div>
 
-                                <div className="rounded-2xl border border-outline-variant/60 bg-surface-container-low px-4 py-3 text-sm text-on-surface-variant">
-                                    Account status: <span className="font-semibold text-primary">Active</span>
-                                </div>
-                            </div>
+                                <div className="grid gap-6 md:grid-cols-2">
+                                    <FormInput label="Full Name" error={profileForm.errors.name}>
+                                        <input
+                                            type="text"
+                                            {...profileForm.getFieldProps('name')}
+                                            className="rounded-2xl border border-outline-variant/60 bg-surface-container-lowest px-4 py-3 text-sm text-on-surface outline-none transition-colors placeholder:text-on-surface-variant/60 focus:border-primary disabled:bg-surface-container-low disabled:text-on-surface-variant disabled:cursor-not-allowed"
+                                        />
+                                    </FormInput>
 
-                            <div className="mt-6 grid gap-4">
-                                {viewMode === 'password' ? (
-                                    <>
-                                        <label className="grid gap-2">
-                                            <span className="text-xs font-semibold uppercase tracking-[0.2em] text-on-surface-variant">New password</span>
-                                            <input
-                                                type="password"
-                                                value={newPassword}
-                                                onChange={(event) => setNewPassword(event.target.value)}
-                                                className="rounded-2xl border border-outline-variant/60 bg-surface-container-lowest px-4 py-3 text-sm text-on-surface outline-none transition-colors placeholder:text-on-surface-variant/60 focus:border-primary"
-                                            />
-                                        </label>
-
-                                        <label className="grid gap-2">
-                                            <span className="text-xs font-semibold uppercase tracking-[0.2em] text-on-surface-variant">Confirm new password</span>
-                                            <input
-                                                type="password"
-                                                value={confirmPassword}
-                                                onChange={(event) => setConfirmPassword(event.target.value)}
-                                                className="rounded-2xl border border-outline-variant/60 bg-surface-container-lowest px-4 py-3 text-sm text-on-surface outline-none transition-colors placeholder:text-on-surface-variant/60 focus:border-primary"
-                                            />
-                                        </label>
-                                    </>
-                                ) : (
-                                    <div className="grid gap-4 md:grid-cols-2">
-                                        <label className="grid gap-2">
-                                            <span className="text-xs font-semibold uppercase tracking-[0.2em] text-on-surface-variant">Name</span>
-                                            <input
-                                                type="text"
-                                                value={name}
-                                                disabled={!isEditing}
-                                                onChange={(event) => setName(event.target.value)}
-                                                className="rounded-2xl border border-outline-variant/60 bg-surface-container-lowest px-4 py-3 text-sm text-on-surface outline-none transition-colors placeholder:text-on-surface-variant/60 focus:border-primary disabled:cursor-not-allowed disabled:bg-surface-container-low disabled:text-on-surface-variant"
-                                            />
-                                        </label>
-
-                                        <label className="grid gap-2">
-                                            <span className="text-xs font-semibold uppercase tracking-[0.2em] text-on-surface-variant">Email</span>
-                                            <input
-                                                type="email"
-                                                value={email}
-                                                disabled={!isEditing}
-                                                onChange={(event) => setEmail(event.target.value)}
-                                                className="rounded-2xl border border-outline-variant/60 bg-surface-container-lowest px-4 py-3 text-sm text-on-surface outline-none transition-colors placeholder:text-on-surface-variant/60 focus:border-primary disabled:cursor-not-allowed disabled:bg-surface-container-low disabled:text-on-surface-variant"
-                                            />
-                                        </label>
-                                    </div>
-                                )}
-
-                                <div className="flex flex-col gap-3 pt-2 sm:flex-row sm:items-center sm:justify-end">
-                                    <div className="flex flex-wrap gap-3">
-                                        <button
-                                            type="button"
-                                            onClick={handleCancel}
-                                            className="rounded-2xl px-5 py-3 text-sm font-semibold text-on-surface-variant transition-colors hover:bg-surface-container-low"
-                                        >
-                                            Cancel changes
-                                        </button>
-                                        <button
-                                            type="button"
-                                            onClick={handleSave}
-                                            disabled={isSaving}
-                                            className="rounded-2xl bg-primary px-5 py-3 text-sm font-semibold text-white shadow-sm transition-transform hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-70"
-                                        >
-                                            {viewMode === 'password' ? 'Update Password' : isEditing ? 'Update Profile' : 'Edit Profile'}
-                                        </button>
-                                    </div>
+                                    <FormInput label="Email Address" error={profileForm.errors.email}>
+                                        <input
+                                            type="email"
+                                            {...profileForm.getFieldProps('email')}
+                                            className="rounded-2xl border border-outline-variant/60 bg-surface-container-lowest px-4 py-3 text-sm text-on-surface outline-none transition-colors placeholder:text-on-surface-variant/60 focus:border-primary"
+                                        />
+                                    </FormInput>
                                 </div>
 
-                                {statusMessage ? (
-                                    <p className="text-sm font-medium text-on-surface-variant">{statusMessage}</p>
-                                ) : null}
-                            </div>
-                        </section>
+                                <div className="mt-6 flex justify-end">
+                                    <button
+                                        type="button"
+                                        onClick={handleSaveProfile}
+                                        disabled={isSaving}
+                                        className="rounded-2xl bg-primary px-6 py-3 text-sm font-semibold text-white shadow-sm transition-transform hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-70"
+                                    >
+                                        {isSaving ? 'Saving...' : 'Save Changes'}
+                                    </button>
+                                </div>
+                            </section>
+                        )}
 
-                        <section id="security" className="grid gap-6 lg:grid-cols-2">
-                            <div className="rounded-[28px] border border-white/70 bg-white/80 p-6 shadow-[0_12px_40px_rgba(15,23,42,0.08)] backdrop-blur sm:p-8">
-                                <div className="flex items-center gap-3">
-                                    <span className="flex h-11 w-11 items-center justify-center rounded-full bg-primary/10 text-primary">
-                                        <ShieldCheck size={18} />
-                                    </span>
-                                    <div>
-                                        <p className="text-xs font-semibold uppercase tracking-[0.24em] text-primary">Account Security</p>
-                                        <h3 className="text-xl font-bold text-on-surface">Secure account</h3>
-                                    </div>
+                        {viewMode === 'password' && (
+                            <section className="rounded-[28px] border border-white/70 bg-white/80 p-6 shadow-[0_12px_40px_rgba(15,23,42,0.08)] backdrop-blur sm:p-8">
+                                <div className="mb-6">
+                                    <p className="text-xs font-semibold uppercase tracking-[0.24em] text-primary">Security</p>
+                                    <h2 className="mt-2 text-2xl font-bold tracking-tight text-on-surface">Change Password</h2>
+                                    <p className="mt-2 text-sm text-on-surface-variant">
+                                        Ensure your account stays secure by using a strong password.
+                                    </p>
                                 </div>
 
-                                <div className="mt-5 rounded-2xl bg-surface-container-low p-5">
-                                    <div className="flex items-start gap-3">
-                                        <div className="mt-0.5 flex h-10 w-10 items-center justify-center rounded-full bg-white text-primary shadow-sm">
-                                            <BadgeCheck size={18} />
+                                <div className="grid gap-6 max-w-lg">
+                                    <FormInput label="Current Password" error={passwordForm.errors.currentPassword}>
+                                        <div className="relative">
+                                            <input
+                                                type={showCurrentPassword ? 'text' : 'password'}
+                                                {...passwordForm.getFieldProps('currentPassword')}
+                                                placeholder="Enter current password"
+                                                className="w-full rounded-2xl border border-outline-variant/60 bg-surface-container-lowest px-4 py-3 pr-10 text-sm text-on-surface outline-none transition-colors placeholder:text-on-surface-variant/60 focus:border-primary"
+                                            />
+                                            <button
+                                                type="button"
+                                                onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+                                                className="absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant hover:text-on-surface"
+                                            >
+                                                {showCurrentPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                                            </button>
                                         </div>
-                                        <div>
-                                            <p className="font-semibold text-on-surface">Account settings</p>
-                                            <p className="mt-1 text-sm leading-6 text-on-surface-variant">
-                                                Review and update your personal details whenever needed.
-                                            </p>
+                                    </FormInput>
+
+                                    <FormInput
+                                        label="New Password"
+                                        hint="At least 6 characters"
+                                        error={passwordForm.errors.newPassword}
+                                    >
+                                        <div className="relative">
+                                            <input
+                                                type={showNewPassword ? 'text' : 'password'}
+                                                {...passwordForm.getFieldProps('newPassword')}
+                                                placeholder="Enter new password"
+                                                className="w-full rounded-2xl border border-outline-variant/60 bg-surface-container-lowest px-4 py-3 pr-10 text-sm text-on-surface outline-none transition-colors placeholder:text-on-surface-variant/60 focus:border-primary"
+                                            />
+                                            <button
+                                                type="button"
+                                                onClick={() => setShowNewPassword(!showNewPassword)}
+                                                className="absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant hover:text-on-surface"
+                                            >
+                                                {showNewPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                                            </button>
                                         </div>
-                                    </div>
+                                    </FormInput>
+
+                                    <FormInput label="Confirm New Password" error={passwordForm.errors.confirmPassword}>
+                                        <div className="relative">
+                                            <input
+                                                type={showConfirmPassword ? 'text' : 'password'}
+                                                {...passwordForm.getFieldProps('confirmPassword')}
+                                                placeholder="Confirm new password"
+                                                className="w-full rounded-2xl border border-outline-variant/60 bg-surface-container-lowest px-4 py-3 pr-10 text-sm text-on-surface outline-none transition-colors placeholder:text-on-surface-variant/60 focus:border-primary"
+                                            />
+                                            <button
+                                                type="button"
+                                                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                                                className="absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant hover:text-on-surface"
+                                            >
+                                                {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                                            </button>
+                                        </div>
+                                    </FormInput>
                                 </div>
-                            </div>
 
-                            <div id="membership" className="rounded-[28px] border border-white/70 bg-[#006b11] p-6 text-white shadow-[0_12px_40px_rgba(15,23,42,0.12)] sm:p-8">
-                                <p className="text-xs font-semibold uppercase tracking-[0.24em] text-white/75">Membership</p>
-                                <h3 className="mt-2 text-2xl font-bold tracking-tight">Your access plan</h3>
-                                <p className="mt-3 max-w-md text-sm leading-6 text-white/85">
-                                    Review your current plan details and account status here.
-                                </p>
+                                <div className="mt-6 flex justify-end">
+                                    <button
+                                        type="button"
+                                        onClick={handleSavePassword}
+                                        disabled={isSaving}
+                                        className="rounded-2xl bg-primary px-6 py-3 text-sm font-semibold text-white shadow-sm transition-transform hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-70"
+                                    >
+                                        {isSaving ? 'Updating...' : 'Update Password'}
+                                    </button>
+                                </div>
+                            </section>
+                        )}
 
-                                <div className="mt-6 grid gap-4 sm:grid-cols-2">
-                                    <div className="rounded-2xl bg-white/10 p-4 ring-1 ring-inset ring-white/15">
-                                        <p className="text-xs uppercase tracking-[0.2em] text-white/70">Plan</p>
-                                        <p className="mt-2 text-lg font-semibold">Premium Learner</p>
-                                    </div>
-                                    <div className="rounded-2xl bg-white/10 p-4 ring-1 ring-inset ring-white/15">
-                                        <p className="text-xs uppercase tracking-[0.2em] text-white/70">Status</p>
-                                        <p className="mt-2 text-lg font-semibold">Active</p>
-                                    </div>
+                        <section className="rounded-[28px] border border-white/70 bg-white/80 p-6 shadow-[0_12px_40px_rgba(15,23,42,0.08)] backdrop-blur sm:p-8">
+                            <div className="flex items-center gap-4">
+                                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-green-100 text-green-600">
+                                    <BadgeCheck size={24} />
+                                </div>
+                                <div className="flex-1">
+                                    <h3 className="font-semibold text-on-surface">Account Status: Active</h3>
+                                    <p className="text-sm text-on-surface-variant">
+                                        Member since {currentUser.createdAt ? new Date(currentUser.createdAt).toLocaleDateString() : 'N/A'}
+                                    </p>
                                 </div>
                             </div>
                         </section>

@@ -10,12 +10,15 @@ interface UserTableProps {
 
     onEdit: (user: User) => void;
     onDelete: (user: User) => void;
+
+    onToggleStatus: (user: User) => void;
 }
 
 export default function UserTable({
                                       users,
                                       onEdit,
                                       onDelete,
+                                      onToggleStatus,
                                   }: UserTableProps) {
     return (
         <>
@@ -28,6 +31,7 @@ export default function UserTable({
                             user={user}
                             onEdit={onEdit}
                             onDelete={onDelete}
+                            onToggleStatus={onToggleStatus}
                             isMobile={true}
                         />
                     ))
@@ -47,11 +51,7 @@ export default function UserTable({
                             <th className="px-4 sm:px-6 py-3 sm:py-4 text-left text-sm">
                                 <button className="flex items-center gap-2 whitespace-nowrap">
                                     Name
-                                    <ArrowUpDown
-                                        size={
-                                            14
-                                        }
-                                    />
+                                    <ArrowUpDown size={14} />
                                 </button>
                             </th>
 
@@ -79,28 +79,22 @@ export default function UserTable({
 
                         <tbody>
                         {users.length > 0 ? (
-                            users.map(
-                                (user) => (
-                                    <UserRow
-                                        key={
-                                            user.id
-                                        }
-                                        user={
-                                            user
-                                        }
-                                        onEdit={
-                                            onEdit
-                                        }
-                                        onDelete={
-                                            onDelete
-                                        }
-                                        isMobile={false}
-                                    />
-                                )
-                            )
+                            users.map((user) => (
+                                <UserRow
+                                    key={user.id}
+                                    user={user}
+                                    onEdit={onEdit}
+                                    onDelete={onDelete}
+                                    onToggleStatus={onToggleStatus}
+                                    isMobile={false}
+                                />
+                            ))
                         ) : (
                             <tr>
-                                <td colSpan={6} className="px-6 py-8 text-center text-gray-500">
+                                <td
+                                    colSpan={6}
+                                    className="px-6 py-8 text-center text-gray-500"
+                                >
                                     No users found
                                 </td>
                             </tr>

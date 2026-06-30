@@ -2,8 +2,11 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { useState } from "react";
 import { Minus, Plus, ShoppingBag, Trash2 } from "lucide-react";
 import { useCart } from "@/context/CartContext";
+import { useAuth } from "@/context/AuthContext";
+import { createCheckoutOrder } from "@/services/checkoutService";
 
 function formatPrice(value: number) {
     return new Intl.NumberFormat("en-US", {
@@ -14,8 +17,28 @@ function formatPrice(value: number) {
 
 export default function CartPage() {
     const { items, cartCount, cartSubtotal, isHydrated, updateQuantity, removeFromCart, clearCart } = useCart();
+    const { getCheckoutPayload } = useCart();
+    const { user, isReady } = useAuth();
+    const [isCheckingOut, setIsCheckingOut] = useState(false);
 
-    if (!isHydrated) {
+    async function handleCheckout() {
+        if (!user) {
+            window.location.href = "/login";
+            return;
+        }
+        try {
+            setIsCheckingOut(true);
+            const data = await createCheckoutOrder({ items: getCheckoutPayload() });
+            window.location.href = data.initPoint;
+        } catch (error) {
+            console.error("Checkout error:", error);
+            alert("Hubo un error al procesar el pago. Intenta de nuevo.");
+        } finally {
+            setIsCheckingOut(false);
+        }
+    }
+
+    if (!isHydrated || !isReady) {
         return (
             <main className="mx-auto flex w-full max-w-7xl flex-1 flex-col px-4 py-10 sm:px-6 lg:px-8">
                 <div className="rounded-2xl border border-outline-variant bg-surface-container-lowest px-6 py-10 text-center text-on-surface-variant shadow-sm">
@@ -51,10 +74,7 @@ export default function CartPage() {
         <main className="mx-auto w-full max-w-7xl flex-1 px-4 py-10 sm:px-6 lg:px-8">
             <div className="mb-6 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
                 <div>
-                    <h1 className="text-3xl font-bold text-on-surface">Temporary cart</h1>
-                    <p className="mt-1 text-sm text-on-surface-variant">
-                        {cartCount} {cartCount === 1 ? "item" : "items"} saved locally in this browser.
-                    </p>
+                    <h1 className="text-3xl font-bold text-on-surface">Shopping cart</h1>
                 </div>
 
                 <button
@@ -158,16 +178,28 @@ export default function CartPage() {
                         </div>
                     </div>
 
-                    <p className="mt-4 rounded-xl bg-secondary-container/30 px-4 py-3 text-xs text-on-surface-variant">
-                        This cart is temporary: it is saved in the browser until we add sessions and backend support.
-                    </p>
-
                     <Link
                         href="/catalog"
-                        className="mt-5 inline-flex w-full items-center justify-center rounded-full bg-primary px-5 py-3 text-sm font-semibold text-on-primary transition-colors hover:brightness-95"
+                        className="mt-5 inline-flex w-full items-center justify-center rounded-full
+                                bg-blue-600 px-5 py-3 text-sm font-semibold text-white
+                                shadow-md transition-all duration-300
+                                hover:bg-blue-700 hover:scale-105 hover:shadow-lg"
                     >
                         Continue shopping
                     </Link>
+
+                    <button
+                        type="button"
+                        onClick={handleCheckout}
+                        disabled={isCheckingOut}
+                        className="mt-5 inline-flex w-full items-center justify-center rounded-full
+                            bg-green-600 px-5 py-3 text-sm font-semibold text-white
+                            shadow-md transition-all duration-300
+                            hover:bg-green-700 hover:scale-105 hover:shadow-lg
+                            disabled:opacity-60 disabled:cursor-not-allowed disabled:scale-100"
+                    >
+                        {isCheckingOut ? "Procesando..." : "Checkout"}
+                    </button>
                 </aside>
             </div>
         </main>

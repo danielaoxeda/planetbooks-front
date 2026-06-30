@@ -1,25 +1,87 @@
-import {BookOpen, Package,} from "lucide-react";
+"use client";
 
-import {getRecentActivities} from "@/utils/adminStats";
+import { BookOpen, Package, LucideIcon } from "lucide-react";
+import { useMemo } from "react";
+import { useOrders } from "@/hooks/useOrders";
 
-const iconMap = {
-    product: {
+type OrderStatus = "PAID" | "COMPLETED" | "PENDING";
+type Order = {
+    id: number;
+    status: OrderStatus;
+    total: number;
+    createdAt: string;
+};
+const iconMap :  Record<
+    OrderStatus,
+    {
+        icon: LucideIcon;
+        bg: string;
+        color: string;
+        label: string;
+    }
+> = {
+    PAID: {
         icon: BookOpen,
         bg: "bg-blue-100",
         color: "text-blue-700",
+        label: "Order Paid",
     },
 
-    inventory: {
+    COMPLETED: {
         icon: Package,
         bg: "bg-orange-100",
         color: "text-orange-700",
+        label: "Order Completed",
+    },
+
+    PENDING: {
+        icon: Package,
+        bg: "bg-yellow-100",
+        color: "text-yellow-700",
+        label: "Order Pending",
     },
 };
 
 export default function ActivityFeed() {
 
-    const activities =
-        getRecentActivities();
+    const { orders, loading } = useOrders() as {
+        orders: Order[];
+        loading: boolean;
+    };
+
+    const activities = useMemo(() => {
+
+        return orders
+            .slice()
+            .sort((a, b) =>
+                new Date(b.createdAt).getTime() -
+                new Date(a.createdAt).getTime()
+            )
+            .slice(0, 8)
+            .map((order) => {
+
+                const config = iconMap[order.status];
+
+                return {
+                    id: order.id,
+                    type: order.status,
+                    title: `${config.label} #${order.id}`,
+                    description: `Total $${order.total ?? 0}`,
+                    time: new Date(order.createdAt)
+                        .toLocaleString(),
+                    icon: config.icon,
+                    bg: config.bg,
+                    color: config.color,
+                };
+            });
+
+    }, [orders]);
+
+    if (loading) {
+        return (
+            <div className="bg-white rounded-2xl border p-6 h-[400px] animate-pulse" />
+        );
+    }
 
     return (
         <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm h-[400px]">
@@ -32,7 +94,7 @@ export default function ActivityFeed() {
                     </h3>
 
                     <p className="text-sm text-gray-500 mt-1">
-                        Latest dashboard updates
+                        Latest orders updates
                     </p>
                 </div>
 
@@ -42,13 +104,7 @@ export default function ActivityFeed() {
 
                 {activities.map((activity) => {
 
-                    const activityConfig =
-                        iconMap[
-                            activity.type as keyof typeof iconMap
-                            ];
-
-                    const Icon =
-                        activityConfig.icon;
+                    const Icon = activity.icon;
 
                     return (
                         <div
@@ -57,9 +113,9 @@ export default function ActivityFeed() {
                         >
 
                             <div
-                                className={`w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 ${activityConfig.bg} ${activityConfig.color}`}
+                                className={`w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 ${activity.bg} ${activity.color}`}
                             >
-                                <Icon size={20}/>
+                                <Icon size={20} />
                             </div>
 
                             <div className="min-w-0">

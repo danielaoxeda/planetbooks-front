@@ -8,6 +8,7 @@ import Sidebar from "@/components/admin/sidebar/Sidebar";
 import TopBar from "@/components/admin/topbar/Topbar";
 import {useState} from "react";
 import {usePathname} from "next/navigation";
+import AuthGuard from "@/components/admin/AuthGuard";
 
 const geistSans = Geist({
     variable: "--font-geist-sans",
@@ -73,6 +74,7 @@ export default function RootLayout({
         >
         <body className="min-h-full flex flex-col md:flex-row overflow-x-hidden">
         <AuthProvider>
+            <AuthGuard>
             <CartProvider>
                 <Sidebar
                     open={sidebarOpen}
@@ -91,6 +93,7 @@ export default function RootLayout({
                     </main>
                 </div>
             </CartProvider>
+            </AuthGuard>
         </AuthProvider>
         </body>
         </html>

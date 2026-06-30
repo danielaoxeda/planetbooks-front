@@ -6,7 +6,22 @@ export interface User {
     email: string;
     role: UserRole;
     enabled: boolean;
+    createdAt: string;
+    updatedAt: string;
+}
 
-    createdAt?: string;
-    updatedAt?: string;
+export interface UpdateUserRequest {
+    name: string;
+    email: string;
+}
+
+export interface UpdateUserDTO {
+    name?: string;
+    email?: string;
+}
+
+export interface CreateUserRequest {
+    name: string;
+    email: string;
+    password: string;
 }

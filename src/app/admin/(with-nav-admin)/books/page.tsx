@@ -2,8 +2,6 @@
 
 import {useState} from "react";
 
-import {products} from "@/data/products";
-
 import AddBookButton from "@/components/admin/books/AddBookButton";
 import AddBookModal from "@/components/admin/books/AddBookModal";
 import BooksFilters from "@/components/admin/books/BooksFilters";
@@ -12,11 +10,16 @@ import BooksTable from "@/components/admin/books/BooksTable";
 import EditBookModal from "@/components/admin/books/EditBookModal";
 
 import {Product} from "@/types/product";
+import {useProducts} from "@/hooks/useProducts";
+import {createProduct, deleteProduct, updateProduct, uploadProductImage} from "@/services/productService";
 
 export default function BooksPage() {
 
-    const [books, setBooks] =
-        useState<Product[]>(products);
+    const {
+        books,
+        loading,
+        refreshProducts,
+    } = useProducts();
 
     const [currentPage, setCurrentPage] =
         useState(1);
@@ -46,63 +49,76 @@ export default function BooksPage() {
                         search.toLowerCase()
                     );
 
-            const matchesCategory =
-                category ===
-                "All Categories" ||
+            const matchesCategory = category === "All Categories" || book.categories.includes(category);
 
-                book.categories.includes(
-                    category
-                );
-
-            return (
-                matchesSearch &&
-                matchesCategory
+            return (matchesSearch && matchesCategory
             );
         });
 
-    const handleDelete = (
-        book: Product
-    ) => {
-
-        setBooks((prev) =>
-            prev.filter(
-                (item) =>
-                    item.id !== book.id
-            )
-        );
-    };
-
-    const handleAddBook = (
+    const handleAddBook = async (
         newBook: Product
     ) => {
+        try {
+            setModalOpen(false);
+            await refreshProducts();
+        } catch (error) {
+            console.error(error);
+        }
+    };
 
-        setBooks((prev) => [
-            ...prev,
-            newBook,
-        ]);
+    const handleUpdateBook = async (
+        updatedBook: Product,
+        imageFile?: File
+    ) => {
+        try {
+            await updateProduct(
+                updatedBook.id,
+                updatedBook
+            )
+
+            if (imageFile) {
+                await uploadProductImage(
+                    updatedBook.id,
+                    imageFile
+                );
+            }
+
+            setEditModalOpen(false);
+
+            await refreshProducts();
+
+        } catch (error) {
+            console.error(error);
+        }
+    };
+    const handleDelete = async (
+        book: Product
+    ) => {
+        try {
+
+            await deleteProduct(book.id);
+            await refreshProducts();
+
+        } catch (error) {
+            console.error(error);
+        }
     };
 
     const handleEdit = (
         book: Product
     ) => {
-
         setSelectedBook(book);
-
         setEditModalOpen(true);
     };
 
-    const handleUpdateBook = (
-        updatedBook: Product
-    ) => {
 
-        setBooks((prev) =>
-            prev.map((book) =>
-                book.id === updatedBook.id
-                    ? updatedBook
-                    : book
-            )
+    if (loading) {
+        return (
+            <div className="flex justify-center py-10">
+                Loading books...
+            </div>
         );
-    };
+    }
 
     return (
         <div className="p-4 sm:p-6 lg:p-8 space-y-6">

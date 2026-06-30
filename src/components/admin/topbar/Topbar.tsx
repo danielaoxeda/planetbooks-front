@@ -2,6 +2,7 @@
 
 import {useState} from "react";
 import {ChevronDown, LogOut, Menu, User,} from "lucide-react";
+import { useAuth } from "@/context/AuthContext";
 
 interface TopbarProps {
     title: string;
@@ -15,8 +16,8 @@ export default function Topbar({
                                    onMenuClick,
                                }: TopbarProps) {
 
-    const [open, setOpen] =
-        useState(false);
+    const [open, setOpen] = useState(false);
+    const { logout } = useAuth();
 
     return (
         <header
@@ -73,6 +74,7 @@ export default function Topbar({
                         </button>
 
                         <button
+                            onClick={() => logout()}
                             className="w-full px-4 py-3 hover:bg-gray-50 flex items-center gap-3 text-red-500 text-sm transition">
                             <LogOut
                                 size={18}
