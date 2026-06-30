@@ -649,3 +649,38 @@ function AccountProfileForm({
         </section>
     )
 }
+
+// Toggle Option Component
+function ToggleOption({
+                          title,
+                          description,
+                          checked,
+                          onChange,
+                      }: {
+    title: string
+    description: string
+    checked: boolean
+    onChange: (checked: boolean) => void
+}) {
+    return (
+        <div className="flex items-center justify-between rounded-2xl border border-outline-variant/60 bg-surface-container-low p-4">
+            <div className="flex-1">
+                <h4 className="font-semibold text-on-surface">{title}</h4>
+                <p className="text-sm text-on-surface-variant">{description}</p>
+            </div>
+            <button
+                type="button"
+                onClick={() => onChange(!checked)}
+                className={`relative ml-4 inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                    checked ? 'bg-primary' : 'bg-gray-300'
+                }`}
+            >
+                <span
+                    className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${
+                        checked ? 'translate-x-6' : 'translate-x-1'
+                    }`}
+                />
+            </button>
+        </div>
+    )
+}
