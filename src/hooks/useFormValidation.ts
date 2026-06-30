@@ -125,3 +125,50 @@ export const ValidationPatterns = {
     url: /^https?:\/\/.+/,
     password: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/,
 }
+
+// Common validation rules factory
+export function createValidationRules() {
+    return {
+        required: (message = 'This field is required'): ValidationRule<string> => ({
+            validate: (value) => Boolean(value && value.trim().length > 0),
+            message,
+        }),
+
+        email: (message = 'Please enter a valid email address'): ValidationRule<string> => ({
+            validate: (value) => !value || ValidationPatterns.email.test(value),
+            message,
+        }),
+
+        minLength: (min: number, message?: string): ValidationRule<string> => ({
+            validate: (value) => !value || value.length >= min,
+            message: message || `Must be at least ${min} characters`,
+        }),
+
+        maxLength: (max: number, message?: string): ValidationRule<string> => ({
+            validate: (value) => !value || value.length <= max,
+            message: message || `Must be no more than ${max} characters`,
+        }),
+
+        password: (
+            message = 'Password must contain uppercase, lowercase, and a number'
+        ): ValidationRule<string> => ({
+            validate: (value) => !value || ValidationPatterns.password.test(value),
+            message,
+        }),
+
+        passwordMinLength: (min: number, message?: string): ValidationRule<string> => ({
+            validate: (value) => !value || value.length >= min,
+            message: message || `Password must be at least ${min} characters`,
+        }),
+
+        match: (matchValue: string, message = 'Fields do not match'): ValidationRule<string> => ({
+            validate: (value) => value === matchValue,
+            message,
+        }),
+
+        pattern: (regex: RegExp, message = 'Invalid format'): ValidationRule<string> => ({
+            validate: (value) => !value || regex.test(value),
+            message,
+        }),
+    }
+}
