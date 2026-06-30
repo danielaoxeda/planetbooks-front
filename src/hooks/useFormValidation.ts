@@ -2,7 +2,6 @@
 
 import { useState, useCallback, useMemo } from 'react'
 
-// Validation rule types
 export type ValidationRule<T> = {
     validate: (value: T) => boolean
     message: string
@@ -12,8 +11,7 @@ export type ValidationRules<T> = {
     [K in keyof T]?: ValidationRule<T[K]>[]
 }
 
-// Form validation hook
-export function useFormValidation<T extends Record<string, unknown>>(
+export function useFormValidation<T extends object>(
     initialValues: T,
     validationRules: ValidationRules<T>
 ) {
@@ -56,7 +54,6 @@ export function useFormValidation<T extends Record<string, unknown>>(
         (name: keyof T, value: unknown) => {
             setValues((prev) => ({ ...prev, [name]: value }))
 
-            // Clear error when user starts typing
             if (errors[name]) {
                 setErrors((prev) => {
                     const newErrors = { ...prev }
@@ -93,7 +90,9 @@ export function useFormValidation<T extends Record<string, unknown>>(
     const getFieldProps = useCallback(
         (name: keyof T) => ({
             value: values[name] ?? '',
-            onChange: (e: React.ChangeEvent<HTMLInputElement>) => setValue(name, e.target.value),
+            onChange: (
+                e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+            ) => setValue(name, e.target.value),
             onBlur: () => handleBlur(name),
             error: touched[name] ? errors[name] : undefined,
         }),
@@ -110,6 +109,7 @@ export function useFormValidation<T extends Record<string, unknown>>(
         touched,
         setValue,
         setValues,
+        setErrors,
         validateAll,
         handleBlur,
         reset,
@@ -118,7 +118,6 @@ export function useFormValidation<T extends Record<string, unknown>>(
     }
 }
 
-// Common validation rules
 export const ValidationPatterns = {
     email: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
     phone: /^[+]?[(]?[0-9]{1,4}[)]?[-\s./0-9]*$/,
@@ -126,7 +125,6 @@ export const ValidationPatterns = {
     password: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/,
 }
 
-// Common validation rules factory
 export function createValidationRules() {
     return {
         required: (message = 'This field is required'): ValidationRule<string> => ({

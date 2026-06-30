@@ -15,6 +15,11 @@ export interface UpdateUserRequest {
     email: string;
 }
 
+export interface UpdateUserDTO {
+    name?: string;
+    email?: string;
+}
+
 export interface CreateUserRequest {
     name: string;
     email: string;
