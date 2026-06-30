@@ -70,7 +70,6 @@ export default function BooksTable({
                                             {book.publisher}
                                         </p>
                                     </div>
-
                                 </div>
 
                             </td>
