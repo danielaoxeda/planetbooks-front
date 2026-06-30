@@ -6,17 +6,58 @@ import { useRouter } from 'next/navigation'
 import {
     AlertCircle,
     BadgeCheck,
+    Bell,
     BookOpen,
     CheckCircle,
     LogOut,
     ShieldCheck,
     Sparkles,
+    Lock,
+    LogOut,
+    Mail,
+    User,
 } from 'lucide-react'
 import { useAuth } from '@/context/AuthContext'
+import { useToast } from '@/context/ToastContext'
 import { authService } from '@/services/authService'
 import { User } from '@/types/user'
 
-type ViewMode = 'profile' | 'password'
+// Privacy settings
+interface PrivacySettings {
+    showProfile: boolean
+    showOrders: boolean
+    allowAnalytics: boolean
+}
+
+function FormInput({
+                       label,
+                       error,
+                       children,
+                       hint,
+                   }: {
+    label: string
+    error?: string
+    children: React.ReactNode
+    hint?: string
+}) {
+    return (
+        <div className="grid gap-2">
+            <div className="flex items-center justify-between">
+                <label className="text-xs font-semibold uppercase tracking-[0.2em] text-on-surface-variant">
+                    {label}
+                </label>
+                {hint && <span className="text-xs text-on-surface-variant/60">{hint}</span>}
+            </div>
+            {children}
+            {error && (
+                <p className="text-xs text-red-600 flex items-center gap-1">
+                    <AlertCircle size={12} />
+                    {error}
+                </p>
+            )}
+        </div>
+    )
+}
 
 type StatusType = 'success' | 'error' | 'info' | null
 
@@ -34,6 +75,8 @@ function AccountProfileForm({
     updateUser: (userData: User) => void
     onLogout: () => void
 }) {
+    const router = useRouter()
+    const toast = useToast()
     const [viewMode, setViewMode] = useState<ViewMode>('profile')
     const [isEditing, setIsEditing] = useState(false)
     const [name, setName] = useState(() => currentUser.name || currentUser.email.split('@')[0])
@@ -44,14 +87,84 @@ function AccountProfileForm({
     const [status, setStatus] = useState<StatusMessage>(null)
     const [isSaving, setIsSaving] = useState(false)
 
-    const displayName = name.trim() || currentUser.name || currentUser.email.split('@')[0]
+    // Password visibility toggles
+    const [showCurrentPassword, setShowCurrentPassword] = useState(false)
+    const [showNewPassword, setShowNewPassword] = useState(false)
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false)
+
+    // Notification preferences state
+    const [notifications, setNotifications] = useState<NotificationPreferences>({
+        emailNotifications: true,
+        orderUpdates: true,
+        promotions: false,
+        newsletter: true,
+    })
+
+    // Privacy settings state
+    const [privacy, setPrivacy] = useState<PrivacySettings>({
+        showProfile: true,
+        showOrders: false,
+        allowAnalytics: true,
+    })
+
+    const validation = createValidationRules()
+
+    // Profile form validation
+    const profileForm = useFormValidation<ProfileFormData>(
+        {
+            name: currentUser.name || currentUser.email.split('@')[0],
+            email: currentUser.email,
+            phone: '',
+            bio: '',
+        },
+        {
+            name: [
+                validation.required('Name is required'),
+                validation.minLength(2, 'Name must be at least 2 characters'),
+            ],
+            email: [
+                validation.required('Email is required'),
+                validation.email('Please enter a valid email'),
+            ],
+            phone: [],
+            bio: [],
+        }
+    )
+
+    // Password form validation
+    const passwordForm = useFormValidation<PasswordFormData>(
+        {
+            currentPassword: '',
+            newPassword: '',
+            confirmPassword: '',
+        },
+        {
+            currentPassword: [validation.required('Current password is required')],
+            newPassword: [
+                validation.required('New password is required'),
+                validation.passwordMinLength(6, 'Password must be at least 6 characters'),
+            ],
+            confirmPassword: [
+                validation.required('Please confirm your password'),
+                validation.match(
+                    passwordForm.values.newPassword,
+                    'Passwords do not match'
+                ),
+            ],
+        }
+    )
+
+    const displayName =
+        profileForm.values.name.trim() ||
+        currentUser.name ||
+        currentUser.email.split('@')[0]
     const initials = displayName
         .split(' ')
         .filter(Boolean)
         .slice(0, 2)
         .map((part) => part[0]?.toUpperCase())
         .join('') || displayName.slice(0, 2).toUpperCase()
-    const roleLabel = currentUser.role === 'ADMIN' ? 'Administrator access' : 'Learner access'
+    const roleLabel = currentUser.role === 'ADMIN' ? 'Administrator' : 'Learner'
 
     const resetProfileFields = useCallback(() => {
         setName(currentUser.name || currentUser.email.split('@')[0])
@@ -133,6 +246,11 @@ function AccountProfileForm({
                 resetPasswordFields()
                 return
             }
+            toast.error(message)
+        } finally {
+            setIsSaving(false)
+        }
+    }
 
             if (!isEditing) {
                 setIsEditing(true)
@@ -202,6 +320,7 @@ function AccountProfileForm({
             <div className="absolute inset-x-0 top-0 h-56 bg-[linear-gradient(180deg,rgba(0,107,17,0.14),transparent)]" />
 
             <div className="relative mx-auto flex w-full max-w-7xl flex-col gap-6 px-4 py-6 sm:px-6 lg:px-8 lg:py-10">
+                {/* Header Card */}
                 <div className="overflow-hidden rounded-[28px] border border-white/60 bg-[#006b11] shadow-[0_20px_80px_rgba(0,107,17,0.22)]">
                     <div className="grid min-h-60 gap-8 p-6 text-white md:grid-cols-[auto_1fr] md:items-end md:p-8 lg:p-10">
                         <div className="flex items-center gap-5">
@@ -209,6 +328,12 @@ function AccountProfileForm({
                                 <div className="flex h-28 w-28 items-center justify-center rounded-full border border-white/25 bg-white/10 text-3xl font-bold tracking-tight text-white shadow-2xl backdrop-blur">
                                     {initials}
                                 </div>
+                                <button
+                                    className="absolute -bottom-1 -right-1 flex h-8 w-8 items-center justify-center rounded-full bg-white text-primary shadow-lg hover:bg-gray-100 transition-colors"
+                                    title="Change avatar"
+                                >
+                                    <User size={14} />
+                                </button>
                             </div>
 
                             <div className="max-w-xl space-y-2">
@@ -241,10 +366,11 @@ function AccountProfileForm({
                 </div>
 
                 <div className="grid gap-6 lg:grid-cols-[280px_1fr] lg:items-start">
+                    {/* Sidebar Navigation */}
                     <aside className="rounded-[28px] border border-white/70 bg-white/80 p-5 shadow-[0_12px_40px_rgba(15,23,42,0.08)] backdrop-blur sm:p-6 lg:sticky lg:top-24">
                         <div className="rounded-2xl bg-surface-container-low px-4 py-4">
-                            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-primary">Session</p>
-                            <p className="mt-1 text-sm text-on-surface-variant">Manage your access from here.</p>
+                            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-primary">Settings</p>
+                            <p className="mt-1 text-sm text-on-surface-variant">Manage your account.</p>
                         </div>
 
                         <button
@@ -276,37 +402,29 @@ function AccountProfileForm({
                         <button
                             type="button"
                             onClick={onLogout}
-                            className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-error/20 bg-error/5 px-4 py-3 text-sm font-semibold text-error transition-colors hover:bg-error/10"
+                            className="mt-6 w-full inline-flex items-center justify-center gap-2 rounded-2xl border border-error/20 bg-error/5 px-4 py-3 text-sm font-semibold text-error transition-colors hover:bg-error/10"
                         >
                             <LogOut size={16} />
                             Sign out
                         </button>
                     </aside>
 
+                    {/* Content Area */}
                     <div className="grid gap-6">
-                        <section
-                            id="personal-info"
-                            className="rounded-[28px] border border-white/70 bg-white/80 p-6 shadow-[0_12px_40px_rgba(15,23,42,0.08)] backdrop-blur sm:p-8"
-                        >
-                            <div className="flex flex-wrap items-start justify-between gap-4">
-                                <div>
-                                    <p className="text-xs font-semibold uppercase tracking-[0.24em] text-primary">
-                                        {viewMode === 'password' ? 'Password' : 'Personal Info'}
-                                    </p>
-                                    <h2 className="mt-2 text-2xl font-bold tracking-tight text-on-surface">
-                                        {viewMode === 'password' ? 'Change your password' : 'Edit your profile'}
-                                    </h2>
-                                    <p className="mt-2 max-w-2xl text-sm leading-6 text-on-surface-variant">
-                                        {viewMode === 'password'
-                                            ? 'Enter the new password twice to confirm the change.'
-                                            : 'Update the basic information associated with your account.'}
+                        {/* Profile Section */}
+                        {viewMode === 'profile' && (
+                            <section className="rounded-[28px] border border-white/70 bg-white/80 p-6 shadow-[0_12px_40px_rgba(15,23,42,0.08)] backdrop-blur sm:p-8">
+                                <div className="mb-6">
+                                    <p className="text-xs font-semibold uppercase tracking-[0.24em] text-primary">Personal Information</p>
+                                    <h2 className="mt-2 text-2xl font-bold tracking-tight text-on-surface">Edit your profile</h2>
+                                    <p className="mt-2 text-sm text-on-surface-variant">
+                                        Update your personal information and how others see you.
                                     </p>
                                 </div>
 
                                 <div className="rounded-2xl border border-outline-variant/60 bg-surface-container-low px-4 py-3 text-sm text-on-surface-variant">
                                     Account status: <span className="font-semibold text-primary">{currentUser.enabled ? 'Active' : 'Inactive'}</span>
                                 </div>
-                            </div>
 
                             <div className="mt-6 grid gap-4">
                                 {viewMode === 'password' ? (
@@ -333,8 +451,9 @@ function AccountProfileForm({
                                             />
                                         </label>
 
-                                        <label className="grid gap-2">
-                                            <span className="text-xs font-semibold uppercase tracking-[0.2em] text-on-surface-variant">Confirm new password</span>
+                                <div className="grid gap-6 max-w-lg">
+                                    <FormInput label="Current Password" error={passwordForm.errors.currentPassword}>
+                                        <div className="relative">
                                             <input
                                                 type="password"
                                                 value={confirmPassword}
@@ -342,29 +461,45 @@ function AccountProfileForm({
                                                 placeholder="Confirm your new password"
                                                 className="rounded-2xl border border-outline-variant/60 bg-surface-container-lowest px-4 py-3 text-sm text-on-surface outline-none transition-colors placeholder:text-on-surface-variant/60 focus:border-primary"
                                             />
-                                        </label>
-                                    </>
-                                ) : (
-                                    <div className="grid gap-4 md:grid-cols-2">
-                                        <label className="grid gap-2">
-                                            <span className="text-xs font-semibold uppercase tracking-[0.2em] text-on-surface-variant">Name</span>
-                                            <input
-                                                type="text"
-                                                value={name}
-                                                disabled={!isEditing}
-                                                onChange={(event) => setName(event.target.value)}
-                                                className="rounded-2xl border border-outline-variant/60 bg-surface-container-lowest px-4 py-3 text-sm text-on-surface outline-none transition-colors placeholder:text-on-surface-variant/60 focus:border-primary disabled:cursor-not-allowed disabled:bg-surface-container-low disabled:text-on-surface-variant"
-                                            />
-                                        </label>
+                                            <button
+                                                type="button"
+                                                onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+                                                className="absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant hover:text-on-surface"
+                                            >
+                                                {showCurrentPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                                            </button>
+                                        </div>
+                                    </FormInput>
 
-                                        <label className="grid gap-2">
-                                            <span className="text-xs font-semibold uppercase tracking-[0.2em] text-on-surface-variant">Email</span>
+                                    <FormInput
+                                        label="New Password"
+                                        hint="At least 6 characters"
+                                        error={passwordForm.errors.newPassword}
+                                    >
+                                        <div className="relative">
                                             <input
-                                                type="email"
-                                                value={email}
-                                                disabled={!isEditing}
-                                                onChange={(event) => setEmail(event.target.value)}
-                                                className="rounded-2xl border border-outline-variant/60 bg-surface-container-lowest px-4 py-3 text-sm text-on-surface outline-none transition-colors placeholder:text-on-surface-variant/60 focus:border-primary disabled:cursor-not-allowed disabled:bg-surface-container-low disabled:text-on-surface-variant"
+                                                type={showNewPassword ? 'text' : 'password'}
+                                                {...passwordForm.getFieldProps('newPassword')}
+                                                placeholder="Enter new password"
+                                                className="w-full rounded-2xl border border-outline-variant/60 bg-surface-container-lowest px-4 py-3 pr-10 text-sm text-on-surface outline-none transition-colors placeholder:text-on-surface-variant/60 focus:border-primary"
+                                            />
+                                            <button
+                                                type="button"
+                                                onClick={() => setShowNewPassword(!showNewPassword)}
+                                                className="absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant hover:text-on-surface"
+                                            >
+                                                {showNewPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                                            </button>
+                                        </div>
+                                    </FormInput>
+
+                                    <FormInput label="Confirm New Password" error={passwordForm.errors.confirmPassword}>
+                                        <div className="relative">
+                                            <input
+                                                type={showConfirmPassword ? 'text' : 'password'}
+                                                {...passwordForm.getFieldProps('confirmPassword')}
+                                                placeholder="Confirm new password"
+                                                className="w-full rounded-2xl border border-outline-variant/60 bg-surface-container-lowest px-4 py-3 pr-10 text-sm text-on-surface outline-none transition-colors placeholder:text-on-surface-variant/60 focus:border-primary"
                                             />
                                         </label>
                                     </div>
@@ -399,32 +534,106 @@ function AccountProfileForm({
                             </div>
                         </section>
 
-                        <section id="security" className="grid gap-6 lg:grid-cols-2">
-                            <div className="rounded-[28px] border border-white/70 bg-white/80 p-6 shadow-[0_12px_40px_rgba(15,23,42,0.08)] backdrop-blur sm:p-8">
-                                <div className="flex items-center gap-3">
-                                    <span className="flex h-11 w-11 items-center justify-center rounded-full bg-primary/10 text-primary">
-                                        <ShieldCheck size={18} />
-                                    </span>
-                                    <div>
-                                        <p className="text-xs font-semibold uppercase tracking-[0.24em] text-primary">Account Security</p>
-                                        <h3 className="text-xl font-bold text-on-surface">Secure account</h3>
-                                    </div>
+                                <div className="space-y-4">
+                                    <ToggleOption
+                                        title="Email Notifications"
+                                        description="Receive notifications via email"
+                                        checked={notifications.emailNotifications}
+                                        onChange={(checked) =>
+                                            setNotifications((prev) => ({ ...prev, emailNotifications: checked }))
+                                        }
+                                    />
+                                    <ToggleOption
+                                        title="Order Updates"
+                                        description="Get updates about your orders and shipments"
+                                        checked={notifications.orderUpdates}
+                                        onChange={(checked) =>
+                                            setNotifications((prev) => ({ ...prev, orderUpdates: checked }))
+                                        }
+                                    />
+                                    <ToggleOption
+                                        title="Promotions & Offers"
+                                        description="Receive promotional emails about deals and offers"
+                                        checked={notifications.promotions}
+                                        onChange={(checked) =>
+                                            setNotifications((prev) => ({ ...prev, promotions: checked }))
+                                        }
+                                    />
+                                    <ToggleOption
+                                        title="Newsletter"
+                                        description="Weekly digest and new book announcements"
+                                        checked={notifications.newsletter}
+                                        onChange={(checked) =>
+                                            setNotifications((prev) => ({ ...prev, newsletter: checked }))
+                                        }
+                                    />
                                 </div>
 
-                                <div className="mt-5 rounded-2xl bg-surface-container-low p-5">
-                                    <div className="flex items-start gap-3">
-                                        <div className="mt-0.5 flex h-10 w-10 items-center justify-center rounded-full bg-white text-primary shadow-sm">
-                                            <BadgeCheck size={18} />
+                                <div className="mt-6 flex justify-end">
+                                    <button
+                                        type="button"
+                                        onClick={handleSaveNotifications}
+                                        disabled={isSaving}
+                                        className="rounded-2xl bg-primary px-6 py-3 text-sm font-semibold text-white shadow-sm transition-transform hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-70"
+                                    >
+                                        {isSaving ? 'Saving...' : 'Save Preferences'}
+                                    </button>
+                                </div>
+                            </section>
+                        )}
+
+                        {/* Privacy Section */}
+                        {viewMode === 'privacy' && (
+                            <section className="rounded-[28px] border border-white/70 bg-white/80 p-6 shadow-[0_12px_40px_rgba(15,23,42,0.08)] backdrop-blur sm:p-8">
+                                <div className="mb-6">
+                                    <p className="text-xs font-semibold uppercase tracking-[0.24em] text-primary">Security</p>
+                                    <h2 className="mt-2 text-2xl font-bold tracking-tight text-on-surface">Privacy Settings</h2>
+                                    <p className="mt-2 text-sm text-on-surface-variant">
+                                        Control who can see your information.
+                                    </p>
+                                </div>
+
+                                <div className="space-y-4">
+                                    <ToggleOption
+                                        title="Public Profile"
+                                        description="Allow others to see your profile information"
+                                        checked={privacy.showProfile}
+                                        onChange={(checked) =>
+                                            setPrivacy((prev) => ({ ...prev, showProfile: checked }))
+                                        }
+                                    />
+                                    <ToggleOption
+                                        title="Order History"
+                                        description="Allow others to see your order history"
+                                        checked={privacy.showOrders}
+                                        onChange={(checked) =>
+                                            setPrivacy((prev) => ({ ...prev, showOrders: checked }))
+                                        }
+                                    />
+                                    <ToggleOption
+                                        title="Analytics"
+                                        description="Help us improve by sharing usage data"
+                                        checked={privacy.allowAnalytics}
+                                        onChange={(checked) =>
+                                            setPrivacy((prev) => ({ ...prev, allowAnalytics: checked }))
+                                        }
+                                    />
+                                </div>
+
+                                <div className="mt-8 rounded-2xl bg-surface-container-low p-6">
+                                    <div className="flex items-start gap-4">
+                                        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-primary">
+                                            <ShieldCheck size={18} />
                                         </div>
                                         <div>
-                                            <p className="font-semibold text-on-surface">Account settings</p>
-                                            <p className="mt-1 text-sm leading-6 text-on-surface-variant">
-                                                Review and update your personal details whenever needed.
+                                            <h3 className="font-semibold text-on-surface">Your Data is Protected</h3>
+                                            <p className="mt-1 text-sm text-on-surface-variant">
+                                                We take your privacy seriously. Your personal data is encrypted and
+                                                never shared with third parties without your consent.
                                             </p>
                                         </div>
                                     </div>
                                 </div>
-                            </div>
 
                             <div id="membership" className="rounded-[28px] border border-white/70 bg-[#006b11] p-6 text-white shadow-[0_12px_40px_rgba(15,23,42,0.12)] sm:p-8">
                                 <p className="text-xs font-semibold uppercase tracking-[0.24em] text-white/75">Membership</p>
@@ -449,6 +658,41 @@ function AccountProfileForm({
                 </div>
             </div>
         </section>
+    )
+}
+
+// Toggle Option Component
+function ToggleOption({
+                          title,
+                          description,
+                          checked,
+                          onChange,
+                      }: {
+    title: string
+    description: string
+    checked: boolean
+    onChange: (checked: boolean) => void
+}) {
+    return (
+        <div className="flex items-center justify-between rounded-2xl border border-outline-variant/60 bg-surface-container-low p-4">
+            <div className="flex-1">
+                <h4 className="font-semibold text-on-surface">{title}</h4>
+                <p className="text-sm text-on-surface-variant">{description}</p>
+            </div>
+            <button
+                type="button"
+                onClick={() => onChange(!checked)}
+                className={`relative ml-4 inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                    checked ? 'bg-primary' : 'bg-gray-300'
+                }`}
+            >
+                <span
+                    className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${
+                        checked ? 'translate-x-6' : 'translate-x-1'
+                    }`}
+                />
+            </button>
+        </div>
     )
 }
 
