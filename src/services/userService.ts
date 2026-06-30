@@ -1,33 +1,60 @@
 import api from "@/lib/axios";
-import { User, UpdateUserDTO } from "@/types/user";
-import { ChangePasswordDTO } from "@/types/auth";
+import { User, UpdateUserRequest } from "@/types/user";
 
-export const UserService = {
+export const userService = {
+
     async getAll(): Promise<User[]> {
-        const response = await api.get<User[]>("/v1/users");
+
+        const response = await api.get("/v1/users");
+
         return response.data;
+
     },
 
     async getById(id: number): Promise<User> {
-        const response = await api.get<User>(`/v1/users/${id}`);
+
+        const response = await api.get(`/v1/users/${id}`);
+
         return response.data;
+
     },
 
-    async getMe(): Promise<User> {
-        const response = await api.get<User>("/auth/me");
-        return response.data;
-    },
+    async update(id: number, data: UpdateUserRequest): Promise<User> {
 
-    async update(id: number, userData: UpdateUserDTO): Promise<User> {
-        const response = await api.put<User>(`/v1/users/${id}`, userData);
-        return response.data;
-    },
+        const response = await api.put(`/v1/users/${id}`, data);
 
-    async changePassword(id: number, passwordData: ChangePasswordDTO): Promise<void> {
-        await api.put(`/v1/users/${id}/password`, passwordData);
+        return response.data;
+
     },
 
     async delete(id: number): Promise<void> {
+
         await api.delete(`/v1/users/${id}`);
+
     },
+
+    async enable(id: number): Promise<void> {
+
+        await api.patch(`/v1/users/${id}/enable`);
+
+    },
+
+    async disable(id: number): Promise<void> {
+
+        await api.patch(`/v1/users/${id}/disable`);
+
+    },
+
+    async promote(id: number): Promise<void> {
+
+        await api.patch(`/v1/users/${id}/promote`);
+
+    },
+
+    async demote(id: number): Promise<void> {
+
+        await api.patch(`/v1/users/${id}/demote`);
+
+    }
+
 };

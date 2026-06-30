@@ -1,18 +1,15 @@
 import api from "@/lib/axios";
 import {AxiosError} from "axios";
+import {CreateProductDto, Product} from "@/types/product";
 
 export async function getProducts() {
-
-    const response =
-        await api.get("/products");
-
+    const response = await api.get("/v1/products");
     return response.data;
 }
 
 export async function getProductById(id: number) {
     try {
-        const response =
-            await api.get(`/products/${id}`);
+        const response = await api.get(`/v1/products/${id}`);
         return response.data;
     } catch (error) {
         const axiosError = error as AxiosError;
@@ -23,13 +20,43 @@ export async function getProductById(id: number) {
     }
 }
 
-export async function createProduct(product: any) {
+export async function createProduct(
+    product: CreateProductDto) {
+    const response = await api.post("/v1/products", product);
+    return response.data;
+}
 
-    const response =
-        await api.post(
-            "/products",
-            product
-        );
+export async function updateProduct(
+    id: number,
+    product: Product,
+) {
+    const response = await api.put(`/v1/products/${id}`, product);
+    return response.data;
+}
+
+export async function deleteProduct(id: number) {
+    const response = await api.delete(`/v1/products/${id}`);
+    return response.data;
+}
+
+export async function uploadProductImage(
+    productId: number,
+    file: File
+) {
+    const formData = new FormData();
+
+    formData.append("file", file);
+
+    const response = await api.post(
+        `/v1/products/${productId}/images`,
+        formData,
+        {
+            headers: {
+                "Content-Type":
+                    "multipart/form-data",
+            },
+        }
+    );
 
     return response.data;
 }
