@@ -11,7 +11,7 @@ import EditBookModal from "@/components/admin/books/EditBookModal";
 
 import {Product} from "@/types/product";
 import {useProducts} from "@/hooks/useProducts";
-import {createProduct, deleteProduct, updateProduct} from "@/services/productService";
+import {createProduct, deleteProduct, updateProduct, uploadProductImage} from "@/services/productService";
 
 export default function BooksPage() {
 
@@ -67,13 +67,21 @@ export default function BooksPage() {
     };
 
     const handleUpdateBook = async (
-        updatedBook: Product
+        updatedBook: Product,
+        imageFile?: File
     ) => {
         try {
             await updateProduct(
                 updatedBook.id,
                 updatedBook
-            );
+            )
+
+            if (imageFile) {
+                await uploadProductImage(
+                    updatedBook.id,
+                    imageFile
+                );
+            }
 
             setEditModalOpen(false);
 
