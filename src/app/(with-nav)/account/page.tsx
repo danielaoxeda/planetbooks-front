@@ -562,6 +562,72 @@ function AccountProfileForm({
                                 </div>
                             </section>
                         )}
+
+                        {/* Privacy Section */}
+                        {viewMode === 'privacy' && (
+                            <section className="rounded-[28px] border border-white/70 bg-white/80 p-6 shadow-[0_12px_40px_rgba(15,23,42,0.08)] backdrop-blur sm:p-8">
+                                <div className="mb-6">
+                                    <p className="text-xs font-semibold uppercase tracking-[0.24em] text-primary">Security</p>
+                                    <h2 className="mt-2 text-2xl font-bold tracking-tight text-on-surface">Privacy Settings</h2>
+                                    <p className="mt-2 text-sm text-on-surface-variant">
+                                        Control who can see your information.
+                                    </p>
+                                </div>
+
+                                <div className="space-y-4">
+                                    <ToggleOption
+                                        title="Public Profile"
+                                        description="Allow others to see your profile information"
+                                        checked={privacy.showProfile}
+                                        onChange={(checked) =>
+                                            setPrivacy((prev) => ({ ...prev, showProfile: checked }))
+                                        }
+                                    />
+                                    <ToggleOption
+                                        title="Order History"
+                                        description="Allow others to see your order history"
+                                        checked={privacy.showOrders}
+                                        onChange={(checked) =>
+                                            setPrivacy((prev) => ({ ...prev, showOrders: checked }))
+                                        }
+                                    />
+                                    <ToggleOption
+                                        title="Analytics"
+                                        description="Help us improve by sharing usage data"
+                                        checked={privacy.allowAnalytics}
+                                        onChange={(checked) =>
+                                            setPrivacy((prev) => ({ ...prev, allowAnalytics: checked }))
+                                        }
+                                    />
+                                </div>
+
+                                <div className="mt-8 rounded-2xl bg-surface-container-low p-6">
+                                    <div className="flex items-start gap-4">
+                                        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-primary">
+                                            <ShieldCheck size={18} />
+                                        </div>
+                                        <div>
+                                            <h3 className="font-semibold text-on-surface">Your Data is Protected</h3>
+                                            <p className="mt-1 text-sm text-on-surface-variant">
+                                                We take your privacy seriously. Your personal data is encrypted and
+                                                never shared with third parties without your consent.
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="mt-6 flex justify-end">
+                                    <button
+                                        type="button"
+                                        onClick={handleSavePrivacy}
+                                        disabled={isSaving}
+                                        className="rounded-2xl bg-primary px-6 py-3 text-sm font-semibold text-white shadow-sm transition-transform hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-70"
+                                    >
+                                        {isSaving ? 'Saving...' : 'Save Settings'}
+                                    </button>
+                                </div>
+                            </section>
+                        )}
                     </div>
                 </div>
             </div>
