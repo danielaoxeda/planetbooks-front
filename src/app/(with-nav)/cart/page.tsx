@@ -28,7 +28,7 @@ export default function CartPage() {
         }
         try {
             setIsCheckingOut(true);
-            const data = await createCheckoutOrder({ items: getCheckoutPayload() });
+            const data = await createCheckoutOrder(items);
             window.location.href = data.initPoint;
         } catch (error) {
             console.error("Checkout error:", error);

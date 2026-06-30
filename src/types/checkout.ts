@@ -8,5 +8,4 @@ export interface CheckoutRequest {
 
 export interface CheckoutResponse {
     initPoint: string;
-    sandboxInitPoint?: string;
 }
