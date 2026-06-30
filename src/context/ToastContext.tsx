@@ -54,3 +54,62 @@ const bgMap: Record<ToastType, string> = {
     warning: 'bg-yellow-50 border-yellow-200',
     info: 'bg-blue-50 border-blue-200',
 }
+
+export function ToastProvider({ children }: { children: ReactNode }) {
+    const [toasts, setToasts] = useState<Toast[]>([])
+
+    const addToast = useCallback((toast: Omit<Toast, 'id'>) => {
+        const id = generateId()
+        const duration = toast.duration ?? DEFAULT_DURATION
+
+        setToasts((prev) => [...prev, { ...toast, id }])
+
+        // Auto remove after duration
+        if (duration > 0) {
+            setTimeout(() => {
+                setToasts((prev) => prev.filter((t) => t.id !== id))
+            }, duration)
+        }
+    }, [])
+
+    const removeToast = useCallback((id: string) => {
+        setToasts((prev) => prev.filter((t) => t.id !== id))
+    }, [])
+
+    const success = useCallback(
+        (message: string, duration?: number) => addToast({ type: 'success', message, duration }),
+        [addToast]
+    )
+
+    const error = useCallback(
+        (message: string, duration?: number) => addToast({ type: 'error', message, duration }),
+        [addToast]
+    )
+
+    const warning = useCallback(
+        (message: string, duration?: number) => addToast({ type: 'warning', message, duration }),
+        [addToast]
+    )
+
+    const info = useCallback(
+        (message: string, duration?: number) => addToast({ type: 'info', message, duration }),
+        [addToast]
+    )
+
+    return (
+        <ToastContext.Provider
+            value={{
+                toasts,
+                addToast,
+                removeToast,
+                success,
+                error,
+                warning,
+                info,
+            }}
+        >
+            {children}
+            <ToastContainer toasts={toasts} removeToast={removeToast} />
+        </ToastContext.Provider>
+    )
+}
