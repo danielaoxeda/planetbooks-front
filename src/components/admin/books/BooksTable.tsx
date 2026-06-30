@@ -1,5 +1,6 @@
 import {Pencil, Trash2,} from "lucide-react";
 import {Product} from "@/types/product";
+import {getImageUrl} from "@/utils/image";
 
 interface Props {
     books: Product[];
@@ -55,7 +56,7 @@ export default function BooksTable({
                                 <div className="flex items-center gap-4">
 
                                     <img
-                                        src={book.image}
+                                        src={getImageUrl(book.image)}
                                         alt={book.title}
                                         className="w-12 h-16 rounded-lg object-cover border border-gray-200"
                                     />
@@ -69,7 +70,6 @@ export default function BooksTable({
                                             {book.publisher}
                                         </p>
                                     </div>
-
                                 </div>
 
                             </td>
