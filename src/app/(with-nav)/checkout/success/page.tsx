@@ -1,6 +1,35 @@
+"use client"
+
 import Link from "next/link";
+import {useEffect, useRef} from "react";
+import {createOrder} from "@/services/orderService";
+import {authService} from "@/services/authService";
 
 export default function CheckoutSuccessPage() {
+
+    const orderCreated = useRef(false);
+    useEffect(() => {
+        if (orderCreated.current) {
+            return;
+        }
+        orderCreated.current = true;
+        const saveOrder = async () => {
+
+            try {
+                const user= await authService.getMe();
+                const order = await createOrder(user.id);
+
+            } catch (error) {
+
+                console.error("ORDER ERROR",error);
+
+            }
+        };
+
+        saveOrder();
+
+    }, []);
+
     return (
         <main className="mx-auto flex w-full max-w-7xl flex-1 flex-col items-center justify-center px-4 py-20 sm:px-6 lg:px-8">
             <div className="mx-auto flex w-full max-w-lg flex-col items-center rounded-3xl border border-outline-variant bg-surface-container-lowest px-8 py-12 text-center shadow-sm">
