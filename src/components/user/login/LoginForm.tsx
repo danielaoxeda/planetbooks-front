@@ -34,7 +34,7 @@ export default function LoginForm() {
 
             } else {
 
-                window.location.href = "/account"
+                window.location.href = "/cart"
 
             }
 
