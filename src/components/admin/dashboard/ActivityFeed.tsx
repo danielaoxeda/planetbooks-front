@@ -8,7 +8,7 @@ type OrderStatus = "PAID" | "COMPLETED" | "PENDING";
 type Order = {
     id: number;
     status: OrderStatus;
-    total: number;
+    totalAmount: number;
     createdAt: string;
 };
 const iconMap :  Record<
@@ -66,7 +66,7 @@ export default function ActivityFeed() {
                     id: order.id,
                     type: order.status,
                     title: `${config.label} #${order.id}`,
-                    description: `Total $${order.total ?? 0}`,
+                    description: `Total $${order.totalAmount ?? 0}`,
                     time: new Date(order.createdAt)
                         .toLocaleString(),
                     icon: config.icon,
