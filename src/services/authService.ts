@@ -31,10 +31,8 @@ export const authService = {
     },
 
     async changePassword(id: number, data: ChangePasswordDTO): Promise<void> {
-        await api.put(`/v1/users/${id}/password`, {
-            currentPassword: data.currentPassword,
-            newPassword: data.newPassword,
-        });
+        // Forward all fields the backend may expect (including confirmPassword)
+        await api.put(`/v1/users/${id}/password`, data);
     },
 
     async getMe(): Promise<User> {

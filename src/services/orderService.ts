@@ -14,3 +14,14 @@ export async function getOrdersSummary() {
 
     return response.data;
 }
+
+
+export async function createOrder(
+    userId: number
+) {
+    const response = await api.post(
+        `/v1/orders?userId=${userId}`
+    );
+
+    return response.data;
+}
