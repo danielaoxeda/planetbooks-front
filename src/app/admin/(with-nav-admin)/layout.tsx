@@ -4,6 +4,7 @@ import {Geist, Geist_Mono} from "next/font/google";
 import "../../globals.css";
 import {AuthProvider} from "@/context/AuthContext";
 import {CartProvider} from "@/context/CartContext";
+import {ToastProvider} from "@/context/ToastContext";
 import Sidebar from "@/components/admin/sidebar/Sidebar";
 import TopBar from "@/components/admin/topbar/Topbar";
 import {useState} from "react";
@@ -76,6 +77,7 @@ export default function RootLayout({
         <AuthProvider>
             <AuthGuard>
             <CartProvider>
+                <ToastProvider>
                 <Sidebar
                     open={sidebarOpen}
                     onClose={() => setSidebarOpen(false)}
@@ -92,6 +94,7 @@ export default function RootLayout({
                         {children}
                     </main>
                 </div>
+                </ToastProvider>
             </CartProvider>
             </AuthGuard>
         </AuthProvider>
