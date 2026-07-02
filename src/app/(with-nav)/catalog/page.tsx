@@ -10,6 +10,7 @@ import { useCatalog } from "@/hooks/useCatalog";
 
 export default function CatalogPage() {
     const {
+        books,
         loading,
         selectedTags,
         setSelectedTags,
@@ -39,6 +40,7 @@ export default function CatalogPage() {
         <main className="mx-auto flex max-w-[1280px] flex-col gap-6 px-8 py-8 md:flex-row">
 
             <Filters
+                products={books}
                 selectedTags={selectedTags}
                 setSelectedTags={setSelectedTags}
                 selectedLevel={selectedLevel}
