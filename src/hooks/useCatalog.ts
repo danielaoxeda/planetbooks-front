@@ -84,9 +84,7 @@ export function useCatalog() {
         let result = books.filter(book => {
             const matchTag =
                 selectedTags.length === 0 ||
-                selectedTags.some(t =>
-                    book.categories?.includes(t)
-                );
+                selectedTags.includes(book.tag);
 
             const matchLevel =
                 !selectedLevel || book.level === selectedLevel;
@@ -97,7 +95,8 @@ export function useCatalog() {
                 !q ||
                 book.title?.toLowerCase().includes(q) ||
                 book.description?.toLowerCase().includes(q) ||
-                book.tag?.toLowerCase().includes(q);
+                book.tag?.toLowerCase().includes(q) ||
+                book.level?.toLowerCase().includes(q);
 
             return matchTag && matchLevel && matchSearch;
         });
