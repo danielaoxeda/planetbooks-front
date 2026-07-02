@@ -3,6 +3,8 @@ import React, {useState} from "react";
 import type {Product, ProductItem} from "@/types/product";
 import {ShoppingCart} from "lucide-react";
 import {useCart} from "@/context/CartContext";
+import { useAuth } from "@/context/AuthContext";
+import { addCartItem } from "@/services/cartService";
 
 interface Props {
     product: Product;
@@ -14,6 +16,7 @@ export default function ProductPurchase({product, onSelectItems}: Props) {
     const [selectedItems, setSelectedItems] = useState<ProductItem[]>(firstItem ? [firstItem] : []);
     const [quantity, setQuantity] = useState<number>(1);
     const {addToCart} = useCart();
+    const { user } = useAuth();
 
     const price = selectedItems.length > 0
         ? selectedItems.reduce((sum, current) => sum + current.price, 0)
@@ -32,14 +35,31 @@ export default function ProductPurchase({product, onSelectItems}: Props) {
         });
     }
 
-    function handleAddToCart() {
+    async function handleAddToCart() {
         const itemsToAdd = selectedItems.length > 0
-            ? selectedItems
-            : firstItem
-                ? [firstItem]
-                : [];
+            ? selectedItems : firstItem ? [firstItem] : [];
 
-        itemsToAdd.forEach((item) => addToCart(product, item, quantity));
+        for (const item of itemsToAdd) {
+
+            addToCart(product, item, quantity);
+
+            if (user) {
+
+                try {
+
+                    await addCartItem(user.id, product.id, item.key, quantity)
+                    console.log("SAVED TO BACKEND CART", user.id, product.id, item.key);
+
+                } catch (error) {
+
+                    console.error(
+                        "Error saving cart",
+                        error
+                    );
+
+                }
+            }
+        }
     }
 
     return (
