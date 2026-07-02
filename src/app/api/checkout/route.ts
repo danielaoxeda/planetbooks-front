@@ -17,7 +17,7 @@ export async function POST(request: NextRequest) {
 
         if (!items || items.length === 0) {
             return NextResponse.json(
-                { error: "El carrito está vacío" },
+                { error: "The cart is empty." },
                 { status: 400 }
             );
         }
@@ -33,7 +33,7 @@ export async function POST(request: NextRequest) {
                     title: item.itemTitle,
                     unit_price: item.itemPrice,
                     quantity: item.quantity,
-                    currency_id: "PEN",
+                    currency_id: "USD",
                 })),
                 back_urls: {
                     success: `${baseUrl}/checkout/success`,
@@ -50,7 +50,7 @@ export async function POST(request: NextRequest) {
     } catch (error) {
         console.error("Error creating MercadoPago preference:", error);
         return NextResponse.json(
-            { error: "No se pudo crear la preferencia de pago" },
+            { error: "The payment preference could not be created" },
             { status: 500 }
         );
     }

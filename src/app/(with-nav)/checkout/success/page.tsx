@@ -4,11 +4,17 @@ import Link from "next/link";
 import {useEffect, useRef} from "react";
 import {createOrder} from "@/services/orderService";
 import {authService} from "@/services/authService";
+import {useCart} from "@/context/CartContext";
+import {clearBackendCart} from "@/services/cartService";
+import {useAuth} from "@/context/AuthContext";
 
 export default function CheckoutSuccessPage() {
+    const { clearCart } = useCart();
+    const { user } = useAuth();
 
     const orderCreated = useRef(false);
     useEffect(() => {
+        if (!user) return;
         if (orderCreated.current) {
             return;
         }
@@ -16,19 +22,23 @@ export default function CheckoutSuccessPage() {
         const saveOrder = async () => {
 
             try {
-                const user= await authService.getMe();
+
                 const order = await createOrder(user.id);
+                console.log("ORDER CREATED", order);
 
-            } catch (error) {
+                await clearBackendCart(user.id);
+                clearCart();
 
-                console.error("ORDER ERROR",error);
+            } catch (error: any) {
+
+                console.error("ORDER ERROR", error?.response?.data);
+                console.error("STATUS", error?.response?.status);
 
             }
         };
-
         saveOrder();
 
-    }, []);
+    }, [user,clearCart]);
 
     return (
         <main className="mx-auto flex w-full max-w-7xl flex-1 flex-col items-center justify-center px-4 py-20 sm:px-6 lg:px-8">
