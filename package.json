@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@mercadopago/sdk-react": "^1.0.7",
+    "@types/xlsx": "^0.0.35",
     "axios": "^1.18.1",
     "lucide-react": "^1.17.0",
     "mercadopago": "^2.12.0",

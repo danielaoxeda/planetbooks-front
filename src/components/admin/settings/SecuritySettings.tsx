@@ -92,7 +92,7 @@ export default function SecuritySettings() {
     // --- Export reports ---
     const [exporting, setExporting] = useState(false);
 
-    function toCSV(items: any[]) {
+    function toCSV(items: Record<string, unknown>[]) {
         if (!items || items.length === 0) return '';
         const keys = Array.from(
             items.reduce((acc, item) => {
@@ -104,7 +104,7 @@ export default function SecuritySettings() {
         const rows = items.map((item) =>
             keys
                 .map((k) => {
-                    const v = (item as Record<string, unknown>)[k as string];
+                    const v = item[k];
                     if (v === null || v === undefined) return '';
                     if (typeof v === 'object') return '"' + JSON.stringify(v).replace(/"/g, '""') + '"';
                     return '"' + String(v).replace(/"/g, '""') + '"';
@@ -137,9 +137,11 @@ export default function SecuritySettings() {
         URL.revokeObjectURL(url);
     }
 
-    async function exportToXLSX(data: any[], filename: string) {
+    async function exportToXLSX(data: unknown[], filename: string) {
         try {
-            const XLSX = (await import('xlsx')) as any;
+            // Dynamic import with proper typing
+            const XLSXModule = await import('xlsx');
+            const XLSX = XLSXModule.default || XLSXModule;
             const worksheet = XLSX.utils.json_to_sheet(data);
             const workbook = { Sheets: { Report: worksheet }, SheetNames: ['Report'] };
             const wbout = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
@@ -147,7 +149,7 @@ export default function SecuritySettings() {
             downloadBlob(blob, filename);
         } catch (e) {
             // Fallback to CSV
-            const csv = toCSV(data);
+            const csv = toCSV(data as Record<string, unknown>[]);
             download(csv, filename.replace(/\.xlsx$/, '.csv'));
         }
     }
