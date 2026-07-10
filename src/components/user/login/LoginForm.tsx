@@ -59,9 +59,9 @@ export default function LoginForm() {
             </div>
             <div className="flex flex-col gap-5">
                 <input name="email" type="email" required placeholder="Email Address"
-                       className="w-full bg-transparent border-0 border-b border-outline-variant focus:border-primary focus:ring-0 py-3 transition-all" />
+                       className="w-full bg-transparent border-0 border-b border-outline-variant focus:border-primary focus:ring-0 py-3 px-[10px] transition-all" />
                 <input name="password" type="password" required placeholder="Password"
-                       className="w-full bg-transparent border-0 border-b border-outline-variant focus:border-primary focus:ring-0 py-3 transition-all" />
+                       className="w-full bg-transparent border-0 border-b border-outline-variant focus:border-primary focus:ring-0 py-3 px-[10px] transition-all" />
             </div>
             <button disabled={loading} className="w-full bg-primary text-on-primary font-bold py-4 rounded-lg mt-4 hover:brightness-110 disabled:opacity-50 transition-all">
                 {loading ? 'Authenticating...' : 'Sign In'}

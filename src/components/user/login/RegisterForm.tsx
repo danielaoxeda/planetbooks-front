@@ -39,19 +39,19 @@ export default function RegisterForm({ onSwitch }: { onSwitch: () => void }) {
                 <div className="flex flex-col gap-1">
                     <label className="text-[10px] font-bold uppercase text-primary">Full Name</label>
                     <input name="name" type="text" required placeholder="John Doe"
-                           className="w-full bg-transparent border-b border-outline-variant focus:border-primary outline-none py-1 transition-all" />
+                           className="w-full bg-transparent border-b border-outline-variant focus:border-primary outline-none py-1 px-[10px] transition-all" />
                 </div>
 
                 <div className="flex flex-col gap-1">
                     <label className="text-[10px] font-bold uppercase text-primary">Email</label>
                     <input name="email" type="email" required placeholder="name@example.com"
-                           className="w-full bg-transparent border-b border-outline-variant focus:border-primary outline-none py-1 transition-all" />
+                           className="w-full bg-transparent border-b border-outline-variant focus:border-primary outline-none py-1 px-[10px] transition-all" />
                 </div>
 
                 <div className="flex flex-col gap-1">
                     <label className="text-[10px] font-bold uppercase text-primary">Password</label>
                     <input name="password" type="password" required placeholder="••••••••"
-                           className="w-full bg-transparent border-b border-outline-variant focus:border-primary outline-none py-1 transition-all" />
+                           className="w-full bg-transparent border-b border-outline-variant focus:border-primary outline-none py-1 px-[10px] transition-all" />
                 </div>
             </div>
 
