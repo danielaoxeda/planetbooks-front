@@ -28,13 +28,15 @@ export async function POST(request: NextRequest) {
 
         const result = await preference.create({
             body: {
-                items: items.map((item) => ({
-                    id: item.itemKey,
-                    title: item.itemTitle,
-                    unit_price: item.itemPrice,
-                    quantity: item.quantity,
-                    currency_id: "USD",
-                })),
+                items: [
+                    {
+                        id: "detalle",
+                        title: items.map(i => `${i.itemTitle} x${i.quantity}`).join(" | "),
+                        unit_price: items.reduce((acc, i) => acc + i.itemPrice * i.quantity, 0),
+                        quantity: 1,
+                        currency_id: "USD",
+                    }
+                ],
                 back_urls: {
                     success: `${baseUrl}/checkout/success`,
                     failure: `${baseUrl}/checkout/failure`,

@@ -44,12 +44,13 @@ export default function ProductCard({
                 />
 
                 <span className="absolute left-4 top-4 rounded-lg bg-green-700 px-2 py-1 text-[10px] font-bold uppercase text-white">
-                    {book.tag}
+                  {book.tag}
                 </span>
             </div>
 
             <div className="space-y-3 p-4">
-                <h3 className="text-lg font-bold text-slate-900 group-hover:text-green-700">
+
+                <h3 className="text-lg font-bold text-slate-900 group-hover:text-green-700 line-clamp-1 overflow-hidden text-ellipsis whitespace-nowrap">
                     {book.title}
                 </h3>
 
@@ -58,9 +59,9 @@ export default function ProductCard({
                 </p>
 
                 <div className="flex items-center justify-between pt-2">
-                    <span className="text-xl font-bold text-slate-900">
-                        ${getPrice(book).toFixed(2)}
-                    </span>
+      <span className="text-xl font-bold text-slate-900">
+        ${getPrice(book).toFixed(2)}
+      </span>
 
                     <Link
                         href={`/catalog/${book.id}`}

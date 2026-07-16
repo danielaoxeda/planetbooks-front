@@ -44,18 +44,11 @@ export async function uploadProductImage(
     file: File
 ) {
     const formData = new FormData();
-
     formData.append("file", file);
 
     const response = await api.post(
         `/v1/products/${productId}/images`,
-        formData,
-        {
-            headers: {
-                "Content-Type":
-                    "multipart/form-data",
-            },
-        }
+        formData
     );
 
     return response.data;
