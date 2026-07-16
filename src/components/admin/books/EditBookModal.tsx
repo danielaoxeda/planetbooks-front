@@ -99,12 +99,11 @@ export default function EditBookModal({
     };
 
     const handleSubmit = () => {
-
+        console.log("Submit");
         if (!book) return;
 
-        const validationErrors =
-            validateBookForm(formData);
-
+        const validationErrors = validateBookForm(formData);
+        console.log(validationErrors);
         if (
             Object.keys(validationErrors).length > 0
         ) {
@@ -162,7 +161,8 @@ export default function EditBookModal({
                     ]
                     : [],
         };
-
+        console.log(updatedBook);
+        console.log(imageFile);
         onSave(
             updatedBook,
             imageFile ?? undefined
